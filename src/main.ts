@@ -5,7 +5,24 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
+import fetch from "node-fetch"
 
+type buttonState = {
+    generic: string
+    single: string
+    double: string
+    long: string
+    press_release: boolean
+}
+
+type actionState = {
+    generic: buttonState
+    btn1: buttonState
+    btn2: buttonState
+    btn3: buttonState
+    btn4: buttonState
+    pir: buttonState
+}
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 
@@ -16,21 +33,23 @@ declare global {
     namespace ioBroker {
         interface AdapterConfig {
             // Define the shape of your options here (recommended)
-            option1: boolean;
+            url: string;
             option2: string;
             // Or use a catch-all approach
-            [key: string]: any;
+            // [key: string]: any;
         }
     }
 }
 
 class Dingz extends utils.Adapter {
+    private url = ""
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
             name: "dingz",
         });
+
         this.on("ready", this.onReady.bind(this));
         this.on("objectChange", this.onObjectChange.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
@@ -45,53 +64,83 @@ class Dingz extends utils.Adapter {
         // Initialize your adapter here
 
         // Reset the connection indicator during startup
-        this.setState("info.connection", false, true);
+        this.setState("info.connection", true, true);
 
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
-        this.log.info("config option1: " + this.config.option1);
+        this.log.info("config url: " + this.config.url);
         this.log.info("config option2: " + this.config.option2);
+        this.url = this.config.url + "/api/v1/"
 
-        /*
-        For every state in the system there has to be also an object of type state
-        Here a simple template for a boolean variable named "testVariable"
-        Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-        */
-        await this.setObjectAsync("testVariable", {
+        await this.setObjectAsync("dingz", {
+            type: "device",
+            common: {
+                name: "Dingz"
+            },
+            native: {}
+        })
+        await this.setObjectAsync("dingz.properties", {
+            type: "channel",
+            common: {
+                name: "System-Info",
+
+            },
+            native: {}
+        })
+
+        await this.setObjectAsync("dingz.properties.puckversion", {
             type: "state",
             common: {
-                name: "testVariable",
-                type: "boolean",
+                name: "PuckVersion",
+                type: "string",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+
+        await this.setObjectAsync("dingz.properties.temperature", {
+            type: "state",
+            common: {
+                name: "Temperature",
+                type: "string",
                 role: "indicator",
                 read: true,
-                write: true,
+                write: false
             },
-            native: {},
-        });
+            native: {}
+
+        })
+        await this.setObjectAsync("dingz.buttons", {
+            type: "channel",
+            common: {
+                name: "button",
+                role: "state"
+            },
+            native: {}
+        })
+
+        await this.createButton("1")
+        await this.createButton("2")
+        await this.createButton("3")
+        await this.createButton("4")
 
         // in this template all states changes inside the adapters namespace are subscribed
         this.subscribeStates("*");
 
-        /*
-        setState examples
-        you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-        */
-        // the variable testVariable is set to true as command (ack=false)
-        await this.setStateAsync("testVariable", true);
+        const puckver = await this.doFetch("puck")
+        await this.setStateAsync("dingz.properties.puckversion", `${puckver.hw.version}/${puckver.fw.version}`)
 
-        // same thing, but the value is flagged "ack"
-        // ack should be always set to true if the value is received from or acknowledged from the target system
-        await this.setStateAsync("testVariable", { val: true, ack: true });
+        const temp = await this.doFetch("temp")
+        await this.setStateAsync("dingz.properties.temperature", temp.temperature)
 
-        // same thing, but the state is deleted after 30s (getState will return null afterwards)
-        await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
+        const buttons: actionState = await this.doFetch("action")
+        await this.setButton("1", buttons.btn1)
+        await this.setButton("2", buttons.btn2)
+        await this.setButton("3", buttons.btn3)
+        await this.setButton("4", buttons.btn4)
 
-        // examples for the checkPassword/checkGroup functions
-        let result = await this.checkPasswordAsync("admin", "iobroker");
-        this.log.info("check user admin pw iobroker: " + result);
-
-        result = await this.checkGroupAsync("admin", "admin");
-        this.log.info("check group user admin group admin: " + result);
     }
 
     /**
@@ -132,6 +181,88 @@ class Dingz extends utils.Adapter {
         }
     }
 
+    private async doFetch(addr: string): Promise<any> {
+        this.log.info("Fetching " + this.url + addr)
+        const response = await fetch("http://" + this.url + addr)
+        if (response.status == 200) {
+            const result = await response.json()
+            this.log.info("got " + JSON.stringify(result))
+            return result
+
+        } else {
+            this.log.error("Error while fetching " + addr + ": " + response.status)
+            this.setState("info.connection", false, true);
+            return {}
+        }
+    }
+
+    private async setButton(number: string, def: buttonState): Promise<void> {
+        await this.setStateAsync(`dingz.buttons.${number}.generic`, def.generic)
+        await this.setStateAsync(`dingz.buttons.${number}.single`, def.single)
+        await this.setStateAsync(`dingz.buttons.${number}.double`, def.double)
+        await this.setStateAsync(`dingz.buttons.${number}.long`, def.long)
+        await this.setStateAsync(`dingz.buttons.${number}.isOn`, def.press_release)
+    }
+
+    private async createButton(number: string): Promise<void> {
+        await this.setObjectAsync("dingz.buttons." + number, {
+            type: "channel",
+            common: {
+                name: "Button " + number,
+            },
+            native: {}
+        })
+        await this.setObjectAsync(`dingz.buttons.${number}.generic`, {
+            type: "state",
+            common: {
+                name: "generic",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+        await this.setObjectAsync(`dingz.buttons.${number}.single`, {
+            type: "state",
+            common: {
+                name: "single",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+        await this.setObjectAsync(`dingz.buttons.${number}.double`, {
+            type: "state",
+            common: {
+                name: "double",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+        await this.setObjectAsync(`dingz.buttons.${number}.long`, {
+            type: "state",
+            common: {
+                name: "long",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+        await this.setObjectAsync(`dingz.buttons.${number}.isOn`, {
+            type: "state",
+            common: {
+                name: "On",
+                role: "state",
+                read: true,
+                write: false
+            },
+            native: {}
+        })
+    }
     // /**
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.message" property to be set to true in io-package.json
