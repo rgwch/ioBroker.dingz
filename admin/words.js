@@ -14,9 +14,9 @@ systemDictionary = {
         "pl": "Ustawienia adaptera dla dingz",
         "zh-cn": "dingz的适配器设置"
     },
-    "option1": {
-        "en": "option1",
-        "de": "Option 1",
+    "url": {
+        "en": "IP address of the device",
+        "de": "IP Adresse des Dingz",
         "ru": "Опция 1",
         "pt": "Opção 1",
         "nl": "Optie 1",
@@ -26,9 +26,9 @@ systemDictionary = {
         "pl": "opcja 1",
         "zh-cn": "选项1"
     },
-    "option2": {
-        "en": "option2",
-        "de": "Option 2",
+    "interval": {
+        "en": "polling interval (seconds)",
+        "de": "Abfrageintervall (Sekunden",
         "ru": "option2",
         "pt": "opção 2",
         "nl": "Optie 2",

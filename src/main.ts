@@ -1,48 +1,94 @@
-/*
- * Created with @iobroker/create-adapter v1.24.2
+/**
+ * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ *
+ * Adapter templated created with @iobroker/create-adapter v1.24.2
  */
 
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
 import fetch from "node-fetch"
 
-type buttonState = {
-    generic: string
-    single: string
-    double: string
-    long: string
-    press_release: boolean
+/*
+ *  Declare answers we might get from the dingz
+ */
+
+type DeviceInfo = {
+    type: string;
+    battery: boolean;
+    reachable: boolean;
+    meshroot: boolean;
+    fw_version: string;
+    hw_version: string;
+    fw_version_puck: string;
+    bl_version_puck: string;
+    hw_version_puck: string;
+    hw_id_puck: string;
+    puck_sn: string;
+    puck_production_date: {
+        year: number;
+        month: number;
+        day: number;
+    };
+    puck_hw_model: string;
+    front_hw_model: string;
+    front_production_date: string;
+    front_sn: string;
+    dip_config: number;
+    has_pir: boolean;
+    hash: string;
+    error?: string;
 }
 
-type actionState = {
-    generic: buttonState
-    btn1: buttonState
-    btn2: buttonState
-    btn3: buttonState
-    btn4: buttonState
-    pir: buttonState
+type ButtonState = {
+    generic: string;
+    single: string;
+    double: string;
+    long: string;
+    press_release: boolean;
 }
-// Load your modules here, e.g.:
-// import * as fs from "fs";
 
-// Augment the adapter.config object with the actual types
-// TODO: delete this in the next version
+type ActionState = {
+    generic: ButtonState;
+    btn1: ButtonState;
+    btn2: ButtonState;
+    btn3: ButtonState;
+    btn4: ButtonState;
+    pir: ButtonState;
+    error?: string;
+}
+
+type PuckVersion = {
+    fw: {
+        success: boolean;
+        version: string;
+    };
+    hw: {
+        success: boolean;
+        version: string;
+    };
+    error?: string;
+}
+
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace ioBroker {
         interface AdapterConfig {
             // Define the shape of your options here (recommended)
             url: string;
-            option2: string;
-            // Or use a catch-all approach
-            // [key: string]: any;
+            interval: number;
         }
     }
 }
 
 class Dingz extends utils.Adapter {
-    private url = ""
+    private url!: string
+    private interval = 30
+    private timer: any
+    private saved!: {
+        btn1: ButtonState;
+        btn2: ButtonState;
+        btn3: ButtonState;
+        btn4: ButtonState;
+    };
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -57,89 +103,47 @@ class Dingz extends utils.Adapter {
         this.on("unload", this.onUnload.bind(this));
     }
 
-    /**
-     * Is called when databases are connected and adapter received configuration.
+
+    /** 
+     * Adapter is up and ready. Check if we can connect to our Dingz and start polling
      */
     private async onReady(): Promise<void> {
-        // Initialize your adapter here
 
         // Reset the connection indicator during startup
-        this.setState("info.connection", true, true);
+        this.setState("info.connection", false, true);
 
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
-        // this.config:
-        this.log.info("config url: " + this.config.url);
-        this.log.info("config option2: " + this.config.option2);
+        // from config
         this.url = this.config.url + "/api/v1/"
+        this.log.debug(this.config.interval + " " + this.interval)
+        this.interval = Math.max(this.config.interval, 10)
+        this.log.info("Polling Interval: " + this.interval)
 
-        await this.setObjectAsync("dingz", {
-            type: "device",
-            common: {
-                name: "Dingz"
-            },
-            native: {}
-        })
-        await this.setObjectAsync("dingz.properties", {
-            type: "channel",
-            common: {
-                name: "System-Info",
+        await this.createObjects()
 
-            },
-            native: {}
-        })
+        const di = await this.doFetch("device")
+        if (di.error) {
+            this.log.error("Could not connect to puck. Errmsg: " + di.error)
+        } else {
+            const keys = Object.keys(di)
+            const mac = keys[0]
+            this.setState("info.deviceInfo.mac", mac, true)
+            this.setState("info.deviceInfo.details", di[mac], true)
+            this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
+            this.setState("info.connection", true, true);
+        }
 
-        await this.setObjectAsync("dingz.properties.puckversion", {
-            type: "state",
-            common: {
-                name: "PuckVersion",
-                type: "string",
-                role: "state",
-                read: true,
-                write: false
-            },
-            native: {}
-        })
+        await this.setStates()
 
-        await this.setObjectAsync("dingz.properties.temperature", {
-            type: "state",
-            common: {
-                name: "Temperature",
-                type: "string",
-                role: "indicator",
-                read: true,
-                write: false
-            },
-            native: {}
-
-        })
-        await this.setObjectAsync("dingz.buttons", {
-            type: "channel",
-            common: {
-                name: "button",
-                role: "state"
-            },
-            native: {}
-        })
-
-        await this.createButton("1")
-        await this.createButton("2")
-        await this.createButton("3")
-        await this.createButton("4")
-
-        // in this template all states changes inside the adapters namespace are subscribed
+        // after we've set the initial states, we subscribe on any changes
         this.subscribeStates("*");
 
-        const puckver = await this.doFetch("puck")
-        await this.setStateAsync("dingz.properties.puckversion", `${puckver.hw.version}/${puckver.fw.version}`)
 
-        const temp = await this.doFetch("temp")
-        await this.setStateAsync("dingz.properties.temperature", temp.temperature)
-
-        const buttons: actionState = await this.doFetch("action")
-        await this.setButton("1", buttons.btn1)
-        await this.setButton("2", buttons.btn2)
-        await this.setButton("3", buttons.btn3)
-        await this.setButton("4", buttons.btn4)
+        this.timer = setInterval(() => {
+            if (!this.setStates()) {
+                // this.setState("info.connection", false, true);
+                this.log.info("Error while polling states")
+            }
+        }, this.interval * 1000)
 
     }
 
@@ -148,6 +152,9 @@ class Dingz extends utils.Adapter {
      */
     private onUnload(callback: () => void): void {
         try {
+            if (this.timer) {
+                clearInterval(this.timer)
+            }
             this.log.info("cleaned everything up...");
             callback();
         } catch (e) {
@@ -182,80 +189,118 @@ class Dingz extends utils.Adapter {
     }
 
     private async doFetch(addr: string): Promise<any> {
-        this.log.info("Fetching " + this.url + addr)
-        const response = await fetch("http://" + this.url + addr)
-        if (response.status == 200) {
-            const result = await response.json()
-            this.log.info("got " + JSON.stringify(result))
-            return result
 
-        } else {
-            this.log.error("Error while fetching " + addr + ": " + response.status)
+        this.log.info("Fetching " + this.url + addr)
+        try {
+            const response = await fetch("http://" + this.url + addr)
+            if (response.status == 200) {
+                const result = await response.json()
+                this.log.info("got " + JSON.stringify(result))
+                return result
+
+            } else {
+                this.log.error("Error while fetching " + addr + ": " + response.status)
+                this.setState("info.connection", false, true);
+                return {}
+            }
+        } catch (err) {
+            this.log.error("Fatal error during fetch")
             this.setState("info.connection", false, true);
-            return {}
+            return { error: err }
         }
     }
 
-    private async setButton(number: string, def: buttonState): Promise<void> {
-        await this.setStateAsync(`dingz.buttons.${number}.generic`, def.generic)
-        await this.setStateAsync(`dingz.buttons.${number}.single`, def.single)
-        await this.setStateAsync(`dingz.buttons.${number}.double`, def.double)
-        await this.setStateAsync(`dingz.buttons.${number}.long`, def.long)
-        await this.setStateAsync(`dingz.buttons.${number}.isOn`, def.press_release)
+    private async setStates(): Promise<boolean> {
+
+        const temp = await this.doFetch("temp")
+        if (temp.error) {
+            return false
+        }
+        await this.setStateAsync("temperature", temp.temperature, true)
+
+        const buttons: ActionState = await this.doFetch("action")
+        if (buttons.error) {
+            return false
+        }
+        
+        await this.setButton("1", buttons.btn1, true)
+        await this.setButton("2", buttons.btn2, true)
+        await this.setButton("3", buttons.btn3, true)
+        await this.setButton("4", buttons.btn4, true)
+        this.saved=buttons
+        return true
     }
 
+    private async setButton(number: string, def: ButtonState, ack: boolean): Promise<void> {
+        await this.setStateAsync(`buttons.${number}.generic`, def.generic, ack)
+        await this.setStateAsync(`buttons.${number}.single`, def.single, ack)
+        await this.setStateAsync(`buttons.${number}.double`, def.double, ack)
+        await this.setStateAsync(`buttons.${number}.long`, def.long, ack)
+        await this.setStateAsync(`buttons.${number}.isOn`, def.press_release, true)
+    }
+
+    private async createObjects(): Promise<void> {
+
+        await this.setObjectAsync("temperature", {
+            type: "state",
+            common: {
+                name: "Temperature",
+                type: "string",
+                role: "indicator",
+                read: true,
+                write: false
+            },
+            native: {}
+
+        })
+        await this.setObjectAsync("buttons", {
+            type: "channel",
+            common: {
+                name: "button",
+                role: "state"
+            },
+            native: {}
+        })
+
+        await this.createButton("1")
+        await this.createButton("2")
+        await this.createButton("3")
+        await this.createButton("4")
+    }
+
+
     private async createButton(number: string): Promise<void> {
-        await this.setObjectAsync("dingz.buttons." + number, {
+        await this.setObjectAsync("buttons." + number, {
             type: "channel",
             common: {
                 name: "Button " + number,
             },
             native: {}
         })
-        await this.setObjectAsync(`dingz.buttons.${number}.generic`, {
-            type: "state",
-            common: {
-                name: "generic",
-                role: "state",
-                read: true,
-                write: false
-            },
-            native: {}
-        })
-        await this.setObjectAsync(`dingz.buttons.${number}.single`, {
-            type: "state",
-            common: {
-                name: "single",
-                role: "state",
-                read: true,
-                write: false
-            },
-            native: {}
-        })
-        await this.setObjectAsync(`dingz.buttons.${number}.double`, {
-            type: "state",
-            common: {
-                name: "double",
-                role: "state",
-                read: true,
-                write: false
-            },
-            native: {}
-        })
-        await this.setObjectAsync(`dingz.buttons.${number}.long`, {
-            type: "state",
-            common: {
-                name: "long",
-                role: "state",
-                read: true,
-                write: false
-            },
-            native: {}
-        })
-        await this.setObjectAsync(`dingz.buttons.${number}.isOn`, {
+        await this.createButtonState(number, "generic")
+        await this.createButtonState(number, "single")
+        await this.createButtonState(number, "double")
+        await this.createButtonState(number, "long")
+
+        await this.setObjectAsync(`buttons.${number}.isOn`, {
             type: "state",
             common: {
                 name: "On",
+                type: "boolean",
+                role: "indicator",
+                read: true,
+                write: true
+            },
+            native: {}
+        })
+
+    }
+    private async createButtonState(button: string, substate: string): Promise<void> {
+        await this.setObjectAsync(`buttons.${button}.${substate}`, {
+            type: "state",
+            common: {
+                name: substate,
+                type: "string",
                 role: "state",
                 read: true,
                 write: false
@@ -263,6 +308,8 @@ class Dingz extends utils.Adapter {
             native: {}
         })
     }
+
+
     // /**
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.message" property to be set to true in io-package.json

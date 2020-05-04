@@ -120,6 +120,38 @@
                 "def": false
             },
             "native": {}
+        },
+        {
+            "_id": "info:deviceInfo",
+            "type": "channel",
+            "common": {
+                "name": "Hardware Informationen"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.deviceInfo.mac",
+            "type": "state",
+            "common": {
+                "role": "state",
+                "name": "mac",
+                "type": "string",
+                "read": true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.deviceInfo.details",
+            "type": "state",
+            "common": {
+                "role": "json",
+                "type": "string",
+                "name": "Detailed informations",
+                "read": true,
+                "write": false
+            },
+            "native": {}
         }
     ]
 }
