@@ -1,6 +1,28 @@
 ![Logo](admin/dingz.png)
 # ioBroker.dingz
 
+## What it is
+
+This is an adapter to connect [Dingz](http://dingz.ch) devices with the [ioBroker](http://iobroker.net) home automation system. A Dingz device features four programmable buttons, a thermometer, and optionally a PIR motion detector. Each button can either switch and/or dim lights directly, control sun blinds, or issue a random http request, to control other devices. Connectors to [Philips Hue](https://www2.meethue.com/de-ch) and [Sonos](https://www.sonos.com/de-ch) are built-in.
+
+With this adapter, Dingz can control anything in the ioBroker ecosystem.
+
+## Install
+
+This adapter is not part of the official ioBroker distribution. So it will not show up in ioBroker admin's adapter list,
+Install it from a shell. CD into /opt/iobroker and then
+
+    npm install https://github.com/rgwch/ioBroker.dingz/tarball/master
+
+or, install it as a custom adapter from the admin-ui:
+
+The adapter should then be in the admin pages's list.
+
+Click on the **+** sign on the right as usual to create an instance. 
+
+## Configuration
+
+
 [![NPM version](http://img.shields.io/npm/v/iobroker.dingz.svg)](https://www.npmjs.com/package/iobroker.dingz)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.dingz.svg)](https://www.npmjs.com/package/iobroker.dingz)
 ![Number of Installations (latest)](http://iobroker.live/badges/dingz-installed.svg)
