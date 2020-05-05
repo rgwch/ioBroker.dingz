@@ -68,7 +68,7 @@ type PuckVersion = {
   error?: string;
 }
 
-const BUTTON_NAMES=["1","2","3","4"]
+const BUTTON_NAMES = ["1", "2", "3", "4"]
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -227,7 +227,7 @@ class Dingz extends utils.Adapter {
         await this.setButton(num, buttons[id], true)
       }
     }
-    
+
     this.saved = buttons
     return true
   }
