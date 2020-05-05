@@ -6,6 +6,7 @@
 
 import * as utils from "@iobroker/adapter-core";
 import fetch from "node-fetch"
+import * as _ from "lodash"
 
 /*
  *  Declare answers we might get from the dingz
@@ -53,7 +54,6 @@ type ActionState = {
     btn3: ButtonState;
     btn4: ButtonState;
     pir: ButtonState;
-    error?: string;
 }
 
 type PuckVersion = {
@@ -88,6 +88,9 @@ class Dingz extends utils.Adapter {
         btn2: ButtonState;
         btn3: ButtonState;
         btn4: ButtonState;
+        generic: ButtonState;
+        pir: ButtonState;
+        error?: string;
     };
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -218,19 +221,34 @@ class Dingz extends utils.Adapter {
         }
         await this.setStateAsync("temperature", temp.temperature, true)
 
-        const buttons: ActionState = await this.doFetch("action")
-        if (buttons.error) {
+        const buttons: ActionState | string= await this.doFetch("action")
+        if (typeof(buttons) == "string"){
             return false
         }
-        
-        await this.setButton("1", buttons.btn1, true)
+
+        for (const num of ["1", "2", "3", "4"]) {
+            const id = "btn" + num
+            this.validateIdx(id)
+            if (!_.isEqual(this.saved[id], buttons[id])) {
+                await this.setButton(num, buttons[id],true)
+            }
+        }
+        if (!_.isEqual(this.saved.btn1, buttons.btn1)) {
+            await this.setButton("1", buttons.btn1, true)
+        }
         await this.setButton("2", buttons.btn2, true)
+
         await this.setButton("3", buttons.btn3, true)
         await this.setButton("4", buttons.btn4, true)
-        this.saved=buttons
+        this.saved = buttons
         return true
     }
 
+    private validateIdx(value: string): asserts value is keyof ActionState{
+        if(["1","2","3","4"].indexOf(value)==-1){
+            throw Error("invalid index")
+        }
+    }
     private async setButton(number: string, def: ButtonState, ack: boolean): Promise<void> {
         await this.setStateAsync(`buttons.${number}.generic`, def.generic, ack)
         await this.setStateAsync(`buttons.${number}.single`, def.single, ack)
