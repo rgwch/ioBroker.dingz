@@ -1,92 +1,93 @@
 <html>
 
 <head>
+  <!-- Load ioBroker scripts and styles-->
+  <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
+  <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
 
-    <!-- Load ioBroker scripts and styles-->
-    <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
-    <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
+  <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 
-    <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="../../js/translate.js"></script>
+  <script type="text/javascript" src="../../lib/js/materialize.js"></script>
+  <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
-    <script type="text/javascript" src="../../js/translate.js"></script>
-    <script type="text/javascript" src="../../lib/js/materialize.js"></script>
-    <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+  <!-- Load our own files -->
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script type="text/javascript" src="words.js"></script>
+  <script type="text/javascript" src="handler.js"></script>
+  <style>
+    .adapter-container>div {
+      margin-bottom: 0 !important;
+    }
 
-    <!-- Load our own files -->
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <script type="text/javascript" src="words.js"></script>
+    .page {
+      height: calc(100% - 50px) !important;
+    }
 
-    <script type="text/javascript">
-        // This will be called by the admin adapter when the settings page loads
-        function load(settings, onChange) {
-            // example: select elements with id=key and class=value and insert value
-            if (!settings) return;
-            $('.value').each(function () {
-                var $key = $(this);
-                var id = $key.attr('id');
-                if ($key.attr('type') === 'checkbox') {
-                    // do not call onChange direct, because onChange could expect some arguments
-                    $key.prop('checked', settings[id])
-                        .on('change', () => onChange())
-                        ;
-                } else {
-                    // do not call onChange direct, because onChange could expect some arguments
-                    $key.val(settings[id])
-                        .on('change', () => onChange())
-                        .on('keyup', () => onChange())
-                        ;
-                }
-            });
-            onChange(false);
-            // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
-            if (M) M.updateTextFields();
-        }
-
-        // This will be called by the admin adapter when the user presses the save button
-        function save(callback) {
-            // example: select elements with class=value and build settings object
-            var obj = {};
-            $('.value').each(function () {
-                var $this = $(this);
-                if ($this.attr('type') === 'checkbox') {
-                    obj[$this.attr('id')] = $this.prop('checked');
-                } else {
-                    obj[$this.attr('id')] = $this.val();
-                }
-            });
-            callback(obj);
-        }
-    </script>
-
+    .marg {
+      margin-top: 5em;
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="m adapter-container">
+  <div class="m adapter-container">
+    <div class="row">
 
+      <div class="col s12">
+        <ul class="tabs">
+          <li class="tab col s2"><a href="#tab-main" class="translate active">Allgemein</a></li>
+          <li class="tab col s2"><a href="#tab-btn" class="translate active">Schalter</a></li>
+          <li class="tab col s2"><a href="#tab-pir" class="translate active">PIR</a></li>
+        </ul>
+      </div>
+
+
+      <div id="tab-main" class="col s12 page">
         <div class="row">
-            <div class="col s12 m4 l2">
-                <img src="dingz.png" class="logo">
-            </div>
+          <div class="input-field col s6">
+            <img src="dingz.png" class="logo">
+          </div>
         </div>
 
-        <!-- Put your content here -->
-
-        <!-- For example columns with settings: -->
         <div class="row">
-            <div class="col s6 input-field">
-                <input type="text" class="value" id="url" />
-                <label for="url" class="translate">url</label>
-            </div>
+          <div class="col s6 input-field">
+            <input type="text" class="value" id="url" />
+            <label for="url" class="translate">url</label>
+          </div>
 
-            <div class="col s6 input-field">
-                <input type="text" class="value" id="interval" />
-                <label for="interval" class="translate">interval</label>
-            </div>
+          <div class="col s6 input-field">
+            <input type="text" class="value" id="interval" />
+            <label for="interval" class="translate">interval</label>
+          </div>
         </div>
-
+      </div>
     </div>
+    <div id="tab-btn" class="col s12 page">
+      <div class="row">
+        <div class="input-field col s6">
+          <img src="dingz.png" class="logo">
+        </div>
+      </div>
+
+      <div class="row">
+        <p class="col s12">Test btn</p>
+      </div>
+    </div>
+    <div id="tab-pir" class="col s12 page">
+      <div class="row">
+        <div class="input-field col s6">
+          <img src="dingz.png" class="logo">
+        </div>
+      </div>
+
+      <div class="row">
+        <p class="col s12">test pir</p>
+      </div>
+    </div>
+  </div>
 
 </body>
 
