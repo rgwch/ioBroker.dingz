@@ -1,6 +1,6 @@
 {
   "name": "iobroker.dingz",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Control of Dingz (http://www.dingz.ch) switches",
   "author": {
     "name": "rgwch",
@@ -59,7 +59,7 @@
     "build": "npm run build:ts",
     "watch:ts": "tsc -p tsconfig.build.json --watch",
     "watch": "npm run watch:ts",
-    "serve": "npm run build:ts && npm pack && http-server",
+    "serve": "npm run build:ts && npm pack && http-server -c-1",
     "test:ts": "mocha --opts test/mocha.custom.opts",
     "test:package": "mocha test/package --exit",
     "test:unit": "mocha test/unit --exit",
