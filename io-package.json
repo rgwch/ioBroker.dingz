@@ -41,9 +41,10 @@
       "pl": "Sterowanie przełącznikami Dingz (http://www.dingz.ch)",
       "zh-cn": "控制Dingz（http://www.dingz.ch）开关"
     },
-    "authors": [
-      "rgwch <rgw@rgw.ch>"
-    ],
+    "author": {
+      "name": "rgwch",
+      "email": "rgwch <rgw@rgw.ch>"
+    },
     "keywords": [
       "ioBroker",
       "Dingz",
