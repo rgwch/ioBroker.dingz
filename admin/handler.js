@@ -19,11 +19,15 @@ function load(settings, onChange) {
 
     }
   });
+  /* Doesn'nt work with current Dingz!
   $('#url').on('blur', () => {
     console.log("update url " + $('#url').val())
     
-    $.getJSON("http://192.168.16.59/api/v1/info", (result=>{/* tu was */}))
+    $.getJSON("http://"+$('#url').val()+"/api/v1/info")
   })
+  */
+  $('#tab-btn').hide()
+  $('#tab-pir').hide()
   onChange(false);
   // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
   if (M) M.updateTextFields();
