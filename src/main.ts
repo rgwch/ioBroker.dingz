@@ -7,6 +7,7 @@
 import * as utils from "@iobroker/adapter-core";
 import fetch from "node-fetch"
 import * as _ from "lodash"
+import { UDP } from "./udp"
 
 /*
  *  Declare answers we might get from the dingz
@@ -69,6 +70,7 @@ type PuckVersion = {
 }
 
 const BUTTON_NAMES = ["1", "2", "3", "4"]
+const API = "/api/v1/"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -77,12 +79,23 @@ declare global {
       // Define the shape of your options here (recommended)
       url: string;
       interval: number;
+      b1single: string;
+      b1double: string;
+      b1long: string;
+      b2single: string;
+      b2double: string;
+      b2long: string;
+      b3single: string;
+      b3double: string;
+      b3long: string;
+      b4single: string;
+      b4double: string;
+      b4long: string;
     }
   }
 }
 
 class Dingz extends utils.Adapter {
-  private url!: string
   private interval = 30
   private timer: any
   private saved!: ActionState
@@ -98,8 +111,20 @@ class Dingz extends utils.Adapter {
     this.on("stateChange", this.onStateChange.bind(this));
     // this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
+
   }
 
+  private async findDingz(): Promise<string> {
+    return new Promise((resolve) => {
+      const udp = new UDP(this.log)
+      udp.on("dingz", (mac, address) => {
+        this.log.info("found Dingz at " + address)
+        udp.stop()
+        resolve(address)
+      })
+      udp.listen()
+    })
+  }
 
   /** 
    * Adapter is up and ready. Check if we can connect to our Dingz and start polling
@@ -108,10 +133,32 @@ class Dingz extends utils.Adapter {
 
     // Reset the connection indicator during startup
     this.setState("info.connection", false, true);
+    if (!this.config.url) {
+      this.log.info("searching Dingz")
+      this.config.url = await this.findDingz()
+      this.log.info("found Dingz at " + this.config.url)
+      const actions: ActionState = await this.doFetch("action")
+      if (actions) {
+        this.log.info("Found actions " + JSON.stringify(actions))
+        this.config.b1single = actions.btn1.single
+        this.config.b1double = actions.btn1.double
+        this.config.b1long = actions.btn1.long
+        this.config.b2single = actions.btn2.single
+        this.config.b2double = actions.btn2.double
+        this.config.b2long = actions.btn2.long
+        this.config.b3single = actions.btn3.single
+        this.config.b3double = actions.btn3.double
+        this.config.b3long = actions.btn3.long
+        this.config.b4single = actions.btn4.single
+        this.config.b4double = actions.btn4.double
+        this.config.b4long = actions.btn4.long
+      }
+    }
 
     // from config
-    this.url = this.config.url + "/api/v1/"
     this.log.debug(this.config.interval + " " + this.interval)
+    this.config.interval = 100
+
     this.interval = Math.max(this.config.interval, 10)
     this.log.info("Polling Interval: " + this.interval)
 
@@ -186,10 +233,11 @@ class Dingz extends utils.Adapter {
   }
 
   private async doFetch(addr: string): Promise<any> {
+    const url = this.config.url + API
 
-    this.log.info("Fetching " + this.url + addr)
+    this.log.info("Fetching " + url + addr)
     try {
-      const response = await fetch("http://" + this.url + addr)
+      const response = await fetch("http://" + url + addr)
       if (response.status == 200) {
         const result = await response.json()
         this.log.info("got " + JSON.stringify(result))

@@ -19,6 +19,7 @@ function load(settings, onChange) {
 
     }
   });
+  /* Doesn'nt work with current Dingz!
   $('#url').on('blur', () => {
     console.log("update url " + $('#url').val())
     const requestOptions = {
@@ -35,6 +36,9 @@ function load(settings, onChange) {
       .then(result => applyValues(result))
       .catch(err => console.log("error", err));
   })
+  */
+  $('#sw-btn').hide()
+  $('#sw-pir').hide()
   onChange(false);
   // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
   if (M) M.updateTextFields();
