@@ -1,157 +1,157 @@
 {
-    "common": {
-        "name": "dingz",
-        "version": "0.0.3",
-        "news": {
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "zh-cn": "首次出版"
-            }
-        },
-        "title": "Dingz",
-        "titleLang": {
-            "en": "Dingz",
-            "de": "Dingz",
-            "ru": "Dingz",
-            "pt": "Dingz",
-            "nl": "Dingz",
-            "fr": "Dingz",
-            "it": "Dingz",
-            "es": "Dingz",
-            "pl": "Dingz",
-            "zh-cn": "丁茨"
-        },
-        "desc": {
-            "en": "Control of Dingz (http://www.dingz.ch) switches",
-            "de": "Steuerung der Dingz-Schalter (http://www.dingz.ch)",
-            "ru": "Управление переключателями Dingz (http://www.dingz.ch)",
-            "pt": "Controle de interruptores Dingz (http://www.dingz.ch)",
-            "nl": "Controle van Dingz (http://www.dingz.ch) schakelaars",
-            "fr": "Contrôle des commutateurs Dingz (http://www.dingz.ch)",
-            "it": "Controllo degli interruttori Dingz (http://www.dingz.ch)",
-            "es": "Control de interruptores Dingz (http://www.dingz.ch)",
-            "pl": "Sterowanie przełącznikami Dingz (http://www.dingz.ch)",
-            "zh-cn": "控制Dingz（http://www.dingz.ch）开关"
-        },
-        "authors": [
-            "rgwch <rgw@rgw.ch>"
-        ],
-        "keywords": [
-            "ioBroker",
-            "Dingz",
-            "template",
-            "Smart Home",
-            "home automation"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "main": "build/main.js",
-        "icon": "dingz.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/rgwch/ioBroker.dingz/master/admin/dingz.png",
-        "readme": "https://github.com/rgwch/ioBroker.dingz/blob/master/README.md",
-        "loglevel": "info",
-        "restartAdapters": [
-            "vis"
-        ],
-        "localLink": "%web_protocol%://%ip%:%web_port%/vis/edit.html",
-        "mode": "daemon",
-        "type": "lighting",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "poll",
-        "materialize": true,
-        "materializeTab": true,
-        "adminTab": {
-            "singleton": true,
-            "name": {
-                "en": "Dingz",
-                "de": "Dingz",
-                "ru": "Dingz",
-                "pt": "Dingz",
-                "nl": "Dingz",
-                "fr": "Dingz",
-                "it": "Dingz",
-                "es": "Dingz",
-                "pl": "Dingz",
-                "zh-cn": "丁茨"
-            },
-            "link": "",
-            "fa-icon": "info"
-        },
-        "supportCustoms": true,
-        "dependencies": [
-            {
-                "js-controller": ">=1.4.2"
-            },
-            "vis"
-        ]
+  "common": {
+    "name": "dingz",
+    "version": "0.0.4",
+    "news": {
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "interval": "60"
+    "title": "Dingz",
+    "titleLang": {
+      "en": "Dingz",
+      "de": "Dingz",
+      "ru": "Dingz",
+      "pt": "Dingz",
+      "nl": "Dingz",
+      "fr": "Dingz",
+      "it": "Dingz",
+      "es": "Dingz",
+      "pl": "Dingz",
+      "zh-cn": "丁茨"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "info:deviceInfo",
-            "type": "channel",
-            "common": {
-                "name": "Hardware Informationen"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.deviceInfo.mac",
-            "type": "state",
-            "common": {
-                "role": "state",
-                "name": "mac",
-                "type": "string",
-                "read": true,
-                "write": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.deviceInfo.details",
-            "type": "state",
-            "common": {
-                "role": "json",
-                "type": "string",
-                "name": "Detailed informations",
-                "read": true,
-                "write": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Control of Dingz (http://www.dingz.ch) switches",
+      "de": "Steuerung der Dingz-Schalter (http://www.dingz.ch)",
+      "ru": "Управление переключателями Dingz (http://www.dingz.ch)",
+      "pt": "Controle de interruptores Dingz (http://www.dingz.ch)",
+      "nl": "Controle van Dingz (http://www.dingz.ch) schakelaars",
+      "fr": "Contrôle des commutateurs Dingz (http://www.dingz.ch)",
+      "it": "Controllo degli interruttori Dingz (http://www.dingz.ch)",
+      "es": "Control de interruptores Dingz (http://www.dingz.ch)",
+      "pl": "Sterowanie przełącznikami Dingz (http://www.dingz.ch)",
+      "zh-cn": "控制Dingz（http://www.dingz.ch）开关"
+    },
+    "authors": [
+      "rgwch <rgw@rgw.ch>"
+    ],
+    "keywords": [
+      "ioBroker",
+      "Dingz",
+      "template",
+      "Smart Home",
+      "home automation"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "build/main.js",
+    "icon": "dingz.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/rgwch/ioBroker.dingz/master/admin/dingz.png",
+    "readme": "https://github.com/rgwch/ioBroker.dingz/blob/master/README.md",
+    "loglevel": "info",
+    "restartAdapters": [
+      "vis"
+    ],
+    "localLink": "%web_protocol%://%ip%:%web_port%/vis/edit.html",
+    "mode": "daemon",
+    "type": "lighting",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "poll",
+    "materialize": true,
+    "materializeTab": true,
+    "adminTab": {
+      "singleton": true,
+      "name": {
+        "en": "Dingz",
+        "de": "Dingz",
+        "ru": "Dingz",
+        "pt": "Dingz",
+        "nl": "Dingz",
+        "fr": "Dingz",
+        "it": "Dingz",
+        "es": "Dingz",
+        "pl": "Dingz",
+        "zh-cn": "丁茨"
+      },
+      "link": "",
+      "fa-icon": "info"
+    },
+    "supportCustoms": true,
+    "dependencies": [
+      {
+        "js-controller": ">=1.4.2"
+      },
+      "vis"
     ]
+  },
+  "native": {
+    "interval": "60"
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info:deviceInfo",
+      "type": "channel",
+      "common": {
+        "name": "Hardware Informationen"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.deviceInfo.mac",
+      "type": "state",
+      "common": {
+        "role": "state",
+        "name": "mac",
+        "type": "string",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.deviceInfo.details",
+      "type": "state",
+      "common": {
+        "role": "json",
+        "type": "string",
+        "name": "Detailed informations",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    }
+  ]
 }

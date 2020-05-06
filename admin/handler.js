@@ -21,12 +21,11 @@ function load(settings, onChange) {
   });
   $('#url').on('blur', () => {
     console.log("update url " + $('#url').val())
-    $.ajax({
-      url: "http://" + $('#url').val() + "/api/v1/action",
-      contentType: "text/plain",
-      success: applyValues,
-      error: (x, y) => { console.log(x + "," + y) }
-    })
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    }
+    $.getJSON("http://192.168.16.59/api/v1/action?callback=?", applyValues)
   })
   onChange(false);
   // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
