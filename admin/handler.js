@@ -23,9 +23,17 @@ function load(settings, onChange) {
     console.log("update url " + $('#url').val())
     const requestOptions = {
       method: 'GET',
-      redirect: 'follow'
+      redirect: 'follow',
+      headers: {
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Encoding": "gzip,deflate",
+        "User-Agent": "Mozilla/5.0"
+      },
     }
-    $.getJSON("http://192.168.16.59/api/v1/action?callback=?", applyValues)
+    fetch("http://192.168.16.59/api/v1/action", requestOptions)
+      .then(response => response.text())
+      .then(result => applyValues(result))
+      .catch(err => console.log("error", err));
   })
   onChange(false);
   // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
