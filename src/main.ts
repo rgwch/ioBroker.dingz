@@ -79,18 +79,7 @@ declare global {
       // Define the shape of your options here (recommended)
       url: string;
       interval: number;
-      b1single: string;
-      b1double: string;
-      b1long: string;
-      b2single: string;
-      b2double: string;
-      b2long: string;
-      b3single: string;
-      b3double: string;
-      b3long: string;
-      b4single: string;
-      b4double: string;
-      b4long: string;
+      intervaldevault: number;
     }
   }
 }
@@ -107,7 +96,6 @@ class Dingz extends utils.Adapter {
     });
 
     this.on("ready", this.onReady.bind(this));
-    this.on("objectChange", this.onObjectChange.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     // this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
@@ -133,29 +121,11 @@ class Dingz extends utils.Adapter {
 
     // Reset the connection indicator during startup
     this.setState("info.connection", false, true);
-    if (!this.config.url) {
-      this.log.info("searching Dingz")
-      this.config.url = await this.findDingz()
-      this.log.info("found Dingz at " + this.config.url)
-      const actions: ActionState = await this.doFetch("action")
-      if (actions) {
-        this.log.info("Found actions " + JSON.stringify(actions))
-        this.config.b1single = actions.btn1.single
-        this.config.b1double = actions.btn1.double
-        this.config.b1long = actions.btn1.long
-        this.config.b2single = actions.btn2.single
-        this.config.b2double = actions.btn2.double
-        this.config.b2long = actions.btn2.long
-        this.config.b3single = actions.btn3.single
-        this.config.b3double = actions.btn3.double
-        this.config.b3long = actions.btn3.long
-        this.config.b4single = actions.btn4.single
-        this.config.b4double = actions.btn4.double
-        this.config.b4long = actions.btn4.long
-      }
-    }
 
     // from config
+    if (!this.config.interval) {
+      this.config.interval = this.config.intervaldevault
+    }
     this.log.debug(this.config.interval + " " + this.interval)
     this.config.interval = 100
 
@@ -166,7 +136,7 @@ class Dingz extends utils.Adapter {
 
     const di = await this.doFetch("device")
     if (di.error) {
-      this.log.error("Could not connect to puck. Errmsg: " + di.error)
+      this.log.error("Could not connect to device. Errmsg: " + di.error)
     } else {
       const keys = Object.keys(di)
       const mac = keys[0]
@@ -206,38 +176,36 @@ class Dingz extends utils.Adapter {
     }
   }
 
-  /**
-   * Is called if a subscribed object changes
-   */
-  private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-    if (obj) {
-      // The object was changed
-      this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-    } else {
-      // The object was deleted
-      this.log.info(`object ${id} deleted`);
-    }
-  }
 
   /**
    * Is called if a subscribed state changes
    */
   private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
     if (state) {
-      // The state was changed
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+      if (!state.ack) {
+        // change came from UI or program
+        const offs = "dingz.0.buttons.".length
+        const subid = id.substr(offs).replace(/\./g, "/")
+        const url = "http://" + this.config.url + API + "action/btn" + subid
+        this.log.info("POSTing " + url)
+
+        fetch(url, { method: "POST", body: state.val as string, redirect: "follow" }).then(posted=>{
+          return posted.text()
+        }).then(text=>console.log(text))
+      }
     } else {
-      // The state was deleted
       this.log.info(`state ${id} deleted`);
     }
   }
+
 
   private async doFetch(addr: string): Promise<any> {
     const url = this.config.url + API
 
     this.log.info("Fetching " + url + addr)
     try {
-      const response = await fetch("http://" + url + addr)
+      const response = await fetch("http://" + url + addr, { method: "get" })
       if (response.status == 200) {
         const result = await response.json()
         this.log.info("got " + JSON.stringify(result))
@@ -271,7 +239,7 @@ class Dingz extends utils.Adapter {
     for (const num of BUTTON_NAMES) {
       const id = "btn" + num
       this.validateIdx(id)
-      if (this.saved && !_.isEqual(this.saved[id], buttons[id])) {
+      if (!this.saved || !_.isEqual(this.saved[id], buttons[id])) {
         await this.setButton(num, buttons[id], true)
       }
     }
@@ -281,11 +249,12 @@ class Dingz extends utils.Adapter {
   }
 
   private validateIdx(value: string): asserts value is keyof ActionState {
-    if (BUTTON_NAMES.indexOf(value) == -1) {
+    if (BUTTON_NAMES.indexOf(value.substr(3)) == -1) {
       throw Error("invalid index")
     }
   }
   private async setButton(number: string, def: ButtonState, ack: boolean): Promise<void> {
+    this.log.info("setting btn " + number + " " + JSON.stringify(def))
     await this.setStateAsync(`buttons.${number}.generic`, def.generic, ack)
     await this.setStateAsync(`buttons.${number}.single`, def.single, ack)
     await this.setStateAsync(`buttons.${number}.double`, def.double, ack)
