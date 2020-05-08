@@ -149,12 +149,12 @@ class Dingz extends utils.Adapter {
     }
 
     // initial setting of our states
-    await this.pollStates()
+    // await this.pollStates()
 
     // after we've set the initial states, we subscribe on any changes
     this.subscribeStates("*");
 
-    // Then we'll have a loom 
+    // Then we'll have a look every 'interval' seconds
     this.timer = setInterval(() => {
       if (!this.pollStates()) {
         // this.setState("info.connection", false, true);
