@@ -97,7 +97,11 @@
     ]
   },
   "native": {
-    "intervaldefault": "60"
+    "interval": "60",
+    "trackbtn1": false,
+    "trackbtn2": false,
+    "trackbtn3": false,
+    "trackbtn4": false
   },
   "objects": [],
   "instanceObjects": [

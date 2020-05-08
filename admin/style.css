@@ -1,10 +1,19 @@
 /* You can delete those if you want. I just found them very helpful */
 * {
-    box-sizing: border-box
+  box-sizing: border-box;
 }
 .m {
-    /* Don't cut off dropdowns! */
-    overflow: initial;
+  /* Don't cut off dropdowns! */
+  overflow: initial;
+}
+
+.button {
+  border-radius: 10px;
+  border-style: outset;
+  border-width: 5px;
+  border-color: lightblue;
+  width: 200px;
+  height: 80px;
 }
 
 /* Add your styles here */
