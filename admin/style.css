@@ -10,10 +10,10 @@
 .button {
   border-radius: 10px;
   border-style: outset;
-  border-width: 5px;
+  border-width: 6px;
   border-color: lightblue;
-  width: 200px;
-  height: 80px;
+  min-width: 200px;
+  min-height: 80px;
 }
 
 /* Add your styles here */

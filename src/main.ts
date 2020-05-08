@@ -79,7 +79,11 @@ declare global {
       // Define the shape of your options here (recommended)
       url: string;
       interval: number;
-      intervaldevault: number;
+      trackbtn1: boolean;
+      trackbtn2: boolean;
+      trackbtn3: boolean;
+      trackbtn4: boolean;
+
     }
   }
 }
@@ -123,17 +127,15 @@ class Dingz extends utils.Adapter {
     this.setState("info.connection", false, true);
 
     // from config
-    if (!this.config.interval) {
-      this.config.interval = this.config.intervaldevault
-    }
-    this.log.debug(this.config.interval + " " + this.interval)
-    this.config.interval = 100
 
+    // don't accept too short polling intervals
     this.interval = Math.max(this.config.interval, 10)
-    this.log.info("Polling Interval: " + this.interval)
+    this.log.debug("Polling Interval: " + this.interval)
 
+    
     await this.createObjects()
 
+    // fetch informations about our dingz. If successful, set info.connection to true.
     const di = await this.doFetch("device")
     if (di.error) {
       this.log.error("Could not connect to device. Errmsg: " + di.error)
@@ -146,12 +148,13 @@ class Dingz extends utils.Adapter {
       this.setState("info.connection", true, true);
     }
 
+    // initial setting of our states
     await this.pollStates()
 
     // after we've set the initial states, we subscribe on any changes
     this.subscribeStates("*");
 
-
+    // Then we'll have a loom 
     this.timer = setInterval(() => {
       if (!this.pollStates()) {
         // this.setState("info.connection", false, true);
