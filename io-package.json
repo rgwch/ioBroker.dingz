@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "news": {
       "0.0.1": {
         "en": "initial release",
@@ -98,6 +98,7 @@
   },
   "native": {
     "interval": "60",
+    "hostip": "",
     "trackbtn1": false,
     "trackbtn2": false,
     "trackbtn3": false,

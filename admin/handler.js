@@ -1,7 +1,10 @@
 // This will be called by the admin adapter when the settings page loads
 function load(settings, onChange) {
-  // example: select elements with id=key and class=value and insert value
   if (!settings) return;
+  if (!settings.hostip) {
+    const href = `${window.location.protocol || "http:"}//${window.location.hostname || "127.0.0.1"}`
+    settings.hostip = href
+  }
   $('.value').each(function () {
     var $key = $(this);
     var id = $key.attr('id');
@@ -19,6 +22,7 @@ function load(settings, onChange) {
 
     }
   });
+
   /* Doesn'nt work with current Dingz!
   $('#url').on('blur', () => {
     console.log("update url " + $('#url').val())
@@ -57,8 +61,4 @@ function save(callback) {
     }
   });
   callback(obj);
-}
-
-function applyValues(data) {
-  console.log("got values " + JSON.stringify(data))
 }

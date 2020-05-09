@@ -109,5 +109,9 @@ systemDictionary = {
         "es": "Instancia",
         "pl": "Instancja",
         "zh-cn": "例"
+    },
+    "hostadress":{
+      "en": "Address of ioBroker host",
+      "de": "Adresse des ioBroker Servers"
     }
 };

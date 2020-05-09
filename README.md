@@ -67,10 +67,14 @@ Use the states in ioBroker Scripting or VIS UI design to react on user interacti
 
 ```javascript
 on({id: dingz.0.buttons.4.long},()=>{
-  log("User clicked Button 4 longer than 2 seconds!","info")
+  log("Someone pressed Dingz Button 4 for more than 2 seconds!","info")
   setState("tradfri.0.xyz",true)
-  setState("boombox.1.345dd",true)
-  setState("musicbox.songselect","we are the champions")
+  setState("boombox.1.volume","100%")
+  if(getState("dingz.0.temperature").val > 19){
+    setState("musicbox.songselect","we are the champions")
+  }else{
+    setState("musicbox.songselect","it's cold inside")
+  }
 })
 ```
 
