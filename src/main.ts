@@ -127,10 +127,10 @@ class Dingz extends utils.Adapter {
     // from config
 
     // don't accept too short polling intervals
-    this.interval = Math.max(this.config.interval, 10)
+    this.interval = Math.max((this.config.interval || 60), 60)
     this.log.debug("Polling Interval: " + this.interval)
 
-    
+
     await this.createObjects()
 
     // fetch informations about our dingz. If successful, set info.connection to true.
@@ -146,18 +146,17 @@ class Dingz extends utils.Adapter {
       this.setState("info.connection", true, true);
     }
 
-    // initial setting of our states
-    // await this.pollStates()
+    this.doFetch("temp").then(temp => {
+      this.setStateAsync("temperature", temp.temperature, true)
+    })
 
-    // after we've set the initial states, we subscribe on any changes
     this.subscribeStates("*");
 
-    // Then we'll have a look every 'interval' seconds
     this.timer = setInterval(() => {
-      if (!this.pollStates()) {
-        // this.setState("info.connection", false, true);
-        this.log.info("Error while polling states")
-      }
+      this.doFetch("temp").then(temp => {
+        this.setStateAsync("temperature", temp.temperature, true)
+      })
+
     }, this.interval * 1000)
 
   }
@@ -226,11 +225,6 @@ class Dingz extends utils.Adapter {
 
   private async pollStates(): Promise<boolean> {
 
-    const temp = await this.doFetch("temp")
-    if (temp.error) {
-      return false
-    }
-    await this.setStateAsync("temperature", temp.temperature, true)
 
     const buttons: ActionState = await this.doFetch("action")
     if (!buttons) {
@@ -286,10 +280,10 @@ class Dingz extends utils.Adapter {
       native: {}
     })
 
-    await this.createButton("1")
-    await this.createButton("2")
-    await this.createButton("3")
-    await this.createButton("4")
+    this.config.trackbtn1 && await this.createButton("1")
+    this.config.trackbtn2 && await this.createButton("2")
+    this.config.trackbtn3 && await this.createButton("3")
+    this.config.trackbtn4 && await this.createButton("4")
   }
 
 
@@ -306,19 +300,19 @@ class Dingz extends utils.Adapter {
     await this.createButtonState(number, "double")
     await this.createButtonState(number, "long")
 
-    await this.setObjectAsync(`buttons.${number}.isOn`, {
+    await this.setObjectAsync(`buttons.${number}.click`, {
       type: "state",
       common: {
         name: "On",
         type: "boolean",
-        role: "indicator",
+        role: "action",
         read: true,
         write: true
       },
       native: {}
     })
-
   }
+
   private async createButtonState(button: string, substate: string): Promise<void> {
     await this.setObjectAsync(`buttons.${button}.${substate}`, {
       type: "state",
