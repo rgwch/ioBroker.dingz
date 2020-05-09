@@ -37,7 +37,6 @@ type DeviceInfo = {
   dip_config: number;
   has_pir: boolean;
   hash: string;
-  error?: string;
 }
 
 type ButtonState = {
@@ -66,7 +65,6 @@ type PuckVersion = {
     success: boolean;
     version: string;
   };
-  error?: string;
 }
 
 const BUTTON_NAMES = ["1", "2", "3", "4"]
