@@ -98,7 +98,6 @@
   },
   "native": {
     "interval": "60",
-    "hostip": "",
     "trackbtn1": false,
     "trackbtn2": false,
     "trackbtn3": false,

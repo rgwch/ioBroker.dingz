@@ -67,7 +67,6 @@ type PuckVersion = {
   };
 }
 
-const BUTTON_NAMES = ["1", "2", "3", "4"]
 const API = "/api/v1/"
 
 declare global {
@@ -77,6 +76,7 @@ declare global {
       // Define the shape of your options here (recommended)
       url: string;
       interval: number;
+      hostip: string;
       trackbtn1: boolean;
       trackbtn2: boolean;
       trackbtn3: boolean;
@@ -98,7 +98,7 @@ class Dingz extends utils.Adapter {
     });
 
     this.on("ready", this.onReady.bind(this));
-    this.on("stateChange", this.onStateChange.bind(this));
+    // this.on("stateChange", this.onStateChange.bind(this));
     // this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
 
@@ -131,8 +131,6 @@ class Dingz extends utils.Adapter {
     this.log.debug("Polling Interval: " + this.interval)
 
 
-    await this.createObjects()
-
     // fetch informations about our dingz. If successful, set info.connection to true.
     const di = await this.doFetch("device")
     if (di.error) {
@@ -144,20 +142,22 @@ class Dingz extends utils.Adapter {
       this.setState("info.deviceInfo.details", di[mac], true)
       this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
       this.setState("info.connection", true, true);
-    }
+      await this.createObjects()
 
-    this.doFetch("temp").then(temp => {
-      this.setStateAsync("temperature", temp.temperature, true)
-    })
 
-    this.subscribeStates("*");
-
-    this.timer = setInterval(() => {
       this.doFetch("temp").then(temp => {
         this.setStateAsync("temperature", temp.temperature, true)
       })
 
-    }, this.interval * 1000)
+      this.subscribeStates("*");
+
+      this.timer = setInterval(() => {
+        this.doFetch("temp").then(temp => {
+          this.setStateAsync("temperature", temp.temperature, true)
+        })
+
+      }, this.interval * 1000)
+    }
 
   }
 
@@ -179,7 +179,7 @@ class Dingz extends utils.Adapter {
 
   /**
    * Is called if a subscribed state changes
-   */
+   
   private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
     if (state) {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -198,7 +198,7 @@ class Dingz extends utils.Adapter {
       this.log.info(`state ${id} deleted`);
     }
   }
-
+*/g
 
   private async doFetch(addr: string): Promise<any> {
     const url = this.config.url + API
@@ -223,38 +223,15 @@ class Dingz extends utils.Adapter {
     }
   }
 
-  private async pollStates(): Promise<boolean> {
 
+  private async setButton(number: string): Promise<void> {
+    const def = this.config.hostip + "/set/dingz.0.buttons.number."
+    this.log.info("setting btn " + number + ": " + JSON.stringify(def))
 
-    const buttons: ActionState = await this.doFetch("action")
-    if (!buttons) {
-      return false
-    }
-
-    for (const num of BUTTON_NAMES) {
-      const id = "btn" + num
-      this.validateIdx(id)
-      if (!this.saved || !_.isEqual(this.saved[id], buttons[id])) {
-        await this.setButton(num, buttons[id], true)
-      }
-    }
-
-    this.saved = buttons
-    return true
-  }
-
-  private validateIdx(value: string): asserts value is keyof ActionState {
-    if (BUTTON_NAMES.indexOf(value.substr(3)) == -1) {
-      throw Error("invalid index")
-    }
-  }
-  private async setButton(number: string, def: ButtonState, ack: boolean): Promise<void> {
-    this.log.info("setting btn " + number + " " + JSON.stringify(def))
-    await this.setStateAsync(`buttons.${number}.generic`, def.generic, ack)
-    await this.setStateAsync(`buttons.${number}.single`, def.single, ack)
-    await this.setStateAsync(`buttons.${number}.double`, def.double, ack)
-    await this.setStateAsync(`buttons.${number}.long`, def.long, ack)
-    await this.setStateAsync(`buttons.${number}.isOn`, def.press_release, true)
+    await this.setStateAsync(`buttons.${number}.generic`, def + "generic")
+    await this.setStateAsync(`buttons.${number}.single`, def + "single")
+    await this.setStateAsync(`buttons.${number}.double`, def + "double")
+    await this.setStateAsync(`buttons.${number}.long`, def + "long")
   }
 
   private async createObjects(): Promise<void> {
@@ -311,6 +288,7 @@ class Dingz extends utils.Adapter {
       },
       native: {}
     })
+    await this.setButton(number)
   }
 
   private async createButtonState(button: string, substate: string): Promise<void> {
@@ -325,6 +303,7 @@ class Dingz extends utils.Adapter {
       },
       native: {}
     })
+
   }
 
 
