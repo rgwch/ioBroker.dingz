@@ -29,23 +29,25 @@ Besides tha mains current connection, one to four of the switches can connect to
 This adapter is not part of the official ioBroker distribution. So it will not show up in ioBroker admin's adapter list.
 You can install it as a custom adapter from the admin-ui:
 
-![](rsc/dingz_1.png)
+![](rsc/dingz_1.jpg)
 
 Make sure to select "Beliebig" even if it's situated on Github:
 
-![](rsc/dingz_2.png)
+![](rsc/dingz_2.jpg)
 
 The adapter should then be in the admin pages's list:
 
-![](rsc/dingz_3.png)
+![](rsc/dingz_3.jpg)
 
 Click on the three dots near the right upper corner and then on the **+** sign to create a new instance. You need a separate instance for each Dingz in your Home.
+
+![](rsc/dingz_4.jpg)
 
 The configuration dialog should open after successful creation of the instance. 
 
 ## Configuration
 
-![](rsc/dingz_5.png)
+![](rsc/dingz_5.jpg)
 
 Enter the IP Address of the Dingz for this instance, the polling interval (60 or even 300 seconds should be enough), and indicate, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller.
 
