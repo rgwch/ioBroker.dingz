@@ -282,7 +282,10 @@ class Dingz extends utils.Adapter {
   private programButton(number: number, action: string): Promise<void> {
     const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.${number}.${action}?value=true`
     this.log.info("programming btn " + number + ": " + JSON.stringify(def))
-    const url = `http://${this.config.url}${API}action/btn${number}/${action}`
+    let url = `${this.config.url}${API}action/btn${number}/${action}`
+    if (url.indexOf("://") == -1) {
+      url = "http://" + url
+    }
     this.log.info("POSTing " + url + "; " + def)
     // const urlencoded = new URLSearchParams();
     // urlencoded.append("get://" + def.substring("http://".length), "true")

@@ -17,50 +17,14 @@ systemDictionary = {
   "url": {
     "en": "IP address of the device",
     "de": "IP Adresse des Dingz",
-    "ru": "Опция 1",
-    "pt": "Opção 1",
-    "nl": "Optie 1",
-    "fr": "Option 1",
-    "it": "opzione 1",
-    "es": "Opción 1",
-    "pl": "opcja 1",
-    "zh-cn": "选项1"
-  },
-  "interval": {
-    "en": "polling interval (seconds)",
-    "de": "Abfrageintervall (Sekunden",
-    "ru": "option2",
-    "pt": "opção 2",
-    "nl": "Optie 2",
-    "fr": "Option 2",
-    "it": "opzione 2",
-    "es": "opcion 2",
-    "pl": "Opcja 2",
-    "zh-cn": "选项2"
-  },
-  "myColor": {
-    "en": "myColor",
-    "de": "meineColor",
-    "ru": "Мой цвет",
-    "pt": "minhaCor",
-    "nl": "mijnKleur",
-    "fr": "maCouleur",
-    "it": "mioColore",
-    "es": "miColor",
-    "pl": "mójKolor",
-    "zh-cn": "我的颜色"
-  },
-  "myColor_tooltip": {
-    "en": "Description of\nmyColor",
-    "de": "Beschreibung von\nmyColor",
-    "ru": "Описание\nmyColor",
-    "pt": "Descrição de\nmyColor",
-    "nl": "Beschrijving van\nmyColor",
-    "fr": "Description de\nmyColor",
-    "it": "Descrizione di\nmyColor",
-    "es": "Descripción de\nmyColor",
-    "pl": "Opis\nmyColor",
-    "zh-cn": "\nmyColor的描述"
+    "ru": "IP-адрес кнопки",
+    "pt": "endereço IP do Dingz",
+    "nl": "ip-adres van de Dingz",
+    "fr": "adresse IP du Dingz",
+    "it": "indirizzo IP del Dingz",
+    "es": "dirección ip del Dingz",
+    "pl": "adres IP przycisku",
+    "zh-cn": "按钮的IP地址"
   },
   "htmlText": {
     "en": "htmlText",
@@ -112,11 +76,27 @@ systemDictionary = {
   },
   "hostadress": {
     "en": "Address of ioBroker host",
-    "de": "Adresse des ioBroker Servers"
+    "de": "Adresse des ioBroker Servers",
+    "ru": "IP-адрес хоста ioBroker",
+    "pt": "endereço IP do host ioBroker",
+    "nl": "ip-adres van de ioBroker-host",
+    "fr": "adresse IP de l'hôte ioBroker",
+    "it": "indirizzo IP dell'host ioBroker",
+    "es": "dirección IP del host ioBorker",
+    "pl": "adres IP hosta ioBroker",
+    "zh-cn": "ioBroker主机的IP地址"
   },
   "whichbutton": {
     "en": "Which of the dingz buttons should ioBroker control?",
-    "de": "Welche Buttons des Dingz soll ioBroker übernehmen?"
+    "de": "Welche Buttons des Dingz soll ioBroker übernehmen?",
+    "ru": "какую из кнопок dingz должен контролировать ioBroker?",
+    "pt": "qual dos botões dingz o ioBroker deve controlar?",
+    "nl": "welke van de dingz-knoppen moet ioBroker bedienen?",
+    "fr": "lequel des boutons dingz doit ioBroker contrôler?",
+    "it": "quale dei pulsanti Dingz dovrebbe controllare ioBroker?",
+    "es": "¿Cuál de los botones dingz debería controlar ioBroker?",
+    "pl": "który z przycisków dingz powinien kontrolować ioBroker?",
+    "zh-cn": "ioBroker应该控制哪个dingz按钮？"
 
   }
 };
