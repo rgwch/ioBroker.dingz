@@ -2,7 +2,7 @@
 function load(settings, onChange) {
   if (!settings) return;
   if (!settings.hostip) {
-    const href = `${window.location.protocol || "http:"}//${window.location.hostname || "127.0.0.1"}`
+    const href = `${window.location.protocol || "http:"}//${window.location.hostname || "127.0.0.1"}:8087`
     settings.hostip = href
   }
   $('.value').each(function () {

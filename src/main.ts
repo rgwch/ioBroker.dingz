@@ -1,5 +1,7 @@
 /**
  * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ * Copyright (c) 2020 by G. Weirich
+ * License: See LICENSE
  *
  * Adapter templated created with @iobroker/create-adapter v1.24.2
  */
@@ -67,13 +69,13 @@ type PuckVersion = {
   };
 }
 
+// That's the only supported API as of now, AFAIK
 const API = "/api/v1/"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace ioBroker {
     interface AdapterConfig {
-      // Define the shape of your options here (recommended)
       url: string;
       interval: number;
       hostip: string;
@@ -89,7 +91,6 @@ declare global {
 class Dingz extends utils.Adapter {
   private interval = 30
   private timer: any
-  private saved!: ActionState
 
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
@@ -117,21 +118,19 @@ class Dingz extends utils.Adapter {
   }
 
   /** 
-   * Adapter is up and ready. Check if we can connect to our Dingz and start polling
+   * Adapter is up and ready. Check if we can connect to our Dingz and setup states and temperature polling
    */
   private async onReady(): Promise<void> {
 
-    // Reset the connection indicator during startup
+    // Reset the connection indicator during startup. We'll set to true later, if we can connect
     this.setState("info.connection", false, true);
-
-    // from config
 
     // don't accept too short polling intervals
     this.interval = Math.max((this.config.interval || 60), 60)
     this.log.debug("Polling Interval: " + this.interval)
 
 
-    // fetch informations about our dingz. If successful, set info.connection to true.
+    // fetch informations about our dingz. If successful, set info.connection to true (making the indicator "green")
     const di = await this.doFetch("device")
     if (di.error) {
       this.log.error("Could not connect to device. Errmsg: " + di.error)
@@ -142,6 +141,7 @@ class Dingz extends utils.Adapter {
       this.setState("info.deviceInfo.details", di[mac], true)
       this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
       this.setState("info.connection", true, true);
+      // we're connected. So Set up State Objects
       await this.createObjects()
 
 
@@ -149,8 +149,9 @@ class Dingz extends utils.Adapter {
         this.setStateAsync("temperature", temp.temperature, true)
       })
 
-      this.subscribeStates("*");
+      // this.subscribeStates("*");
 
+      // Read temperature regularly and set state accordingly
       this.timer = setInterval(() => {
         this.doFetch("temp").then(temp => {
           this.setStateAsync("temperature", temp.temperature, true)
@@ -162,7 +163,7 @@ class Dingz extends utils.Adapter {
   }
 
   /**
-   * Is called when adapter shuts down - callback has to be called under any circumstances!
+   * Adapter shuts down - clear Timer
    */
   private onUnload(callback: () => void): void {
     try {
@@ -179,6 +180,7 @@ class Dingz extends utils.Adapter {
 
   /**
    * Is called if a subscribed state changes
+   * 
    
   private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
     if (state) {
@@ -198,44 +200,27 @@ class Dingz extends utils.Adapter {
       this.log.info(`state ${id} deleted`);
     }
   }
-*/g
-
-  private async doFetch(addr: string): Promise<any> {
-    const url = this.config.url + API
-
-    this.log.info("Fetching " + url + addr)
-    try {
-      const response = await fetch("http://" + url + addr, { method: "get" })
-      if (response.status == 200) {
-        const result = await response.json()
-        this.log.info("got " + JSON.stringify(result))
-        return result
-
-      } else {
-        this.log.error("Error while fetching " + addr + ": " + response.status)
-        this.setState("info.connection", false, true);
-        return {}
-      }
-    } catch (err) {
-      this.log.error("Fatal error during fetch")
-      this.setState("info.connection", false, true);
-      return undefined
-    }
-  }
+*/
 
 
-  private async setButton(number: string): Promise<void> {
-    const def = this.config.hostip + "/set/dingz.0.buttons.number."
-    this.log.info("setting btn " + number + ": " + JSON.stringify(def))
-
-    await this.setStateAsync(`buttons.${number}.generic`, def + "generic")
-    await this.setStateAsync(`buttons.${number}.single`, def + "single")
-    await this.setStateAsync(`buttons.${number}.double`, def + "double")
-    await this.setStateAsync(`buttons.${number}.long`, def + "long")
-  }
-
+  /**
+   * Called from onReady(). We create our State structure:
+   * dingz.X:{
+   *   info:{
+   *      connected: boolean
+   *      deviceInfo: DeviceInfo
+   *   },
+   *  buttons:{
+   *      btn1: ButtonState,
+   *      btn2: ButtonState,
+   *      btn3: ButtonState,
+   *      btn4: ButtonState
+   *      
+   *    },
+   *   temperature: string
+   * }
+   */
   private async createObjects(): Promise<void> {
-
     await this.setObjectAsync("temperature", {
       type: "state",
       common: {
@@ -276,19 +261,8 @@ class Dingz extends utils.Adapter {
     await this.createButtonState(number, "single")
     await this.createButtonState(number, "double")
     await this.createButtonState(number, "long")
-
-    await this.setObjectAsync(`buttons.${number}.click`, {
-      type: "state",
-      common: {
-        name: "On",
-        type: "boolean",
-        role: "action",
-        read: true,
-        write: true
-      },
-      native: {}
-    })
-    await this.setButton(number)
+    await this.createButtonState(number, "click")
+    await this.programButton(number)
   }
 
   private async createButtonState(button: string, substate: string): Promise<void> {
@@ -296,15 +270,53 @@ class Dingz extends utils.Adapter {
       type: "state",
       common: {
         name: substate,
-        type: "string",
-        role: "state",
+        type: "boolean",
+        role: "action",
         read: true,
-        write: false
+        write: true
       },
       native: {}
     })
-
   }
+
+  private async programButton(number: string): Promise<void> {
+    const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.number.`
+    this.log.info("programming btn " + number + ": " + JSON.stringify(def))
+    await this.doPost()
+
+    /*
+    await this.setStateAsync(`buttons.${number}.generic`, def + "generic")
+    await this.setStateAsync(`buttons.${number}.single`, def + "single")
+    await this.setStateAsync(`buttons.${number}.double`, def + "double")
+    await this.setStateAsync(`buttons.${number}.long`, def + "long")
+    */
+  }
+
+  private async doPost(){}
+
+  private async doFetch(addr: string): Promise<any> {
+    const url = this.config.url + API
+
+    this.log.info("Fetching " + url + addr)
+    try {
+      const response = await fetch("http://" + url + addr, { method: "get" })
+      if (response.status == 200) {
+        const result = await response.json()
+        this.log.info("got " + JSON.stringify(result))
+        return result
+
+      } else {
+        this.log.error("Error while fetching " + addr + ": " + response.status)
+        this.setState("info.connection", false, true);
+        return {}
+      }
+    } catch (err) {
+      this.log.error("Fatal error during fetch")
+      this.setState("info.connection", false, true);
+      return undefined
+    }
+  }
+
 
 
   // /**
