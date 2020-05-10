@@ -66,7 +66,17 @@ Detailed informations on the Dingz and its connection state are found in dingz.X
 Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button. Example:
 
 ```javascript
-on({id: dingz.0.buttons.4.long},()=>{
+const b4="dingz.0.buttons.4."
+
+on({id:b4+"single"},()=>{
+    log("Button 4 single press received","info")
+})
+
+on({id:b4+"double"},()=>{
+    log("Button 4 double press received","info")
+})
+
+on({id: b4+"long"},()=>{
   log("Someone pressed Dingz Button 4 for more than 2 seconds!","info")
   setState("tradfri.0.xyz",true)
   setState("boombox.1.volume","100%")

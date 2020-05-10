@@ -242,30 +242,29 @@ class Dingz extends utils.Adapter {
       native: {}
     })
 
-    this.config.trackbtn1 && await this.createButton("1")
-    this.config.trackbtn2 && await this.createButton("2")
-    this.config.trackbtn3 && await this.createButton("3")
-    this.config.trackbtn4 && await this.createButton("4")
+    this.config.trackbtn1 && await this.createButton(1)
+    this.config.trackbtn2 && await this.createButton(2)
+    this.config.trackbtn3 && await this.createButton(3)
+    this.config.trackbtn4 && await this.createButton(4)
   }
 
 
-  private async createButton(number: string): Promise<void> {
-    await this.setObjectAsync("buttons." + number, {
+  private async createButton(btn: number): Promise<void> {
+    await this.setObjectAsync("buttons." + btn, {
       type: "channel",
       common: {
-        name: "Button " + number,
+        name: "Button " + btn,
       },
       native: {}
     })
-    await this.createButtonState(number, "generic")
-    await this.createButtonState(number, "single")
-    await this.createButtonState(number, "double")
-    await this.createButtonState(number, "long")
-    await this.createButtonState(number, "click")
-    await this.programButton(number)
+    await this.createButtonState(btn, "generic")
+    await this.createButtonState(btn, "single")
+    await this.createButtonState(btn, "double")
+    await this.createButtonState(btn, "long")
+    // await this.createButtonState(btn, "press_release")
   }
 
-  private async createButtonState(button: string, substate: string): Promise<void> {
+  private async createButtonState(button: number, substate: string): Promise<void> {
     await this.setObjectAsync(`buttons.${button}.${substate}`, {
       type: "state",
       common: {
@@ -277,12 +276,30 @@ class Dingz extends utils.Adapter {
       },
       native: {}
     })
+    await this.programButton(button, substate)
   }
 
-  private async programButton(number: string): Promise<void> {
-    const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.number.`
+  private programButton(number: number, action: string): Promise<void> {
+    const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.${number}.${action}?value=true`
     this.log.info("programming btn " + number + ": " + JSON.stringify(def))
-    await this.doPost()
+    const url = `http://${this.config.url}${API}action/btn${number}/${action}`
+    this.log.info("POSTing " + url + "; " + def)
+    // const urlencoded = new URLSearchParams();
+    // urlencoded.append("get://" + def.substring("http://".length), "true")
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: "get://" + def.substring("http://".length),
+      redirect: "follow"
+    }).then(() => {
+      console.log("POST succesful")
+    })
+      .catch(err => {
+        this.log.error(err)
+      })
+
 
     /*
     await this.setStateAsync(`buttons.${number}.generic`, def + "generic")
@@ -292,7 +309,6 @@ class Dingz extends utils.Adapter {
     */
   }
 
-  private async doPost(){}
 
   private async doFetch(addr: string): Promise<any> {
     const url = this.config.url + API
