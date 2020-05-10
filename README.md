@@ -9,11 +9,15 @@ Each button can issue separate actions on single press, double press and long pr
 
 With this adapter, Dingz can control anything in the ioBroker ecosystem.
 
+Note: This version supports a limited subset of Dingz features:
+- act on single/double/long press of any of the buttons
+- read thermometer value
+
 ## Hardware installation
 
 Please refer to the informations on the product's homepage. You'll need to connect to the mains power. Depending on the laws of the country where you live, this is only legal for professional electricians. In any case it's dangerous. So better call an electrician anyway.
 
-Besides tha mains current connection, one to four of the switches can connect to lights, sun blinds, electric heating valves and others. Unconnected switches can still be operated by software and issue random commands over WiFi.
+Besides the mains current connection, any or all of the buttons can connect to lights, sun blinds, electric heating valves and others. Unconnected buttons can still be operated by software and issue random commands over WiFi.
 
 ## Software Installation
 
@@ -31,15 +35,16 @@ You can install it as a custom adapter from the admin-ui:
 
 ![](rsc/dingz_1.jpg)
 
-Make sure to select "Beliebig" even if it's situated on Github:
+Make sure to select "Beliebig" even though it's situated on Github:
 
 ![](rsc/dingz_2.jpg)
 
+Read the warning and click "install" if you agree anyway.
 The adapter should then be in the admin pages's list:
 
 ![](rsc/dingz_3.jpg)
 
-Click on the three dots near the right upper corner and then on the **+** sign to create a new instance. You need a separate instance for each Dingz in your Home.
+Click on the three dots near the right upper corner and then on the **+** sign in the lower left corner to create a new instance. You need a separate instance for each Dingz in your Home.
 
 ![](rsc/dingz_4.jpg)
 
@@ -49,7 +54,9 @@ The configuration dialog should open after successful creation of the instance.
 
 ![](rsc/dingz_5.jpg)
 
-Enter the IP Address of the Dingz for this instance, the polling interval (60 or even 300 seconds should be enough), and indicate, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller.
+Enter the IP Address of the Dingz for this instance. You need also to indicate the address of the ioBroker server and the port you've set when configuring the "Simple RESTful" Adapter. By default, that's 8087. You might as well give the symolic network name of the ioBroker Server, e.g. `http://homecontrol.local:8087`.
+
+In the lower part you can define, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller. But a button can be physically wired to a light and still act on ioBroker programming. 
 
 ## Use
 
@@ -65,7 +72,7 @@ And for the temperature:
 
 Detailed informations on the Dingz and its connection state are found in dingz.X.info
 
-Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button. Example:
+Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button (direct press or via app/web control). Example:
 
 ```javascript
 const b4="dingz.0.buttons.4."
