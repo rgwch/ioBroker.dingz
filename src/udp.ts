@@ -1,3 +1,11 @@
+/**
+ * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ * Copyright (c) 2020 by G. Weirich
+ * License: See LICENSE
+ *
+ * UDP Discovery of Dingz
+ * */
+
 import * as dgram from "dgram"
 import { EventEmitter } from "events"
 
