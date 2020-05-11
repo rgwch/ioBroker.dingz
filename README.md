@@ -54,7 +54,7 @@ The configuration dialog should open after successful creation of the instance.
 
 ![](rsc/dingz_5.jpg)
 
-Enter the IP Address of the Dingz for this instance. You need also to indicate the address of the ioBroker server and the port you've set when configuring the "Simple RESTful" Adapter. By default, that's 8087. You might as well give the symolic network name of the ioBroker Server, e.g. `http://homecontrol.local:8087`.
+Enter the IP Address of the Dingz for this instance. You need also to indicate the address of the ioBroker server and the port you've set when configuring the "Simple RESTful" Adapter. By default, that's 8087. The symolic network name of the ioBroker Server, e.g. `http://homecontrol.local:8087` will probably not work, so better find out the IP address, e.g. in the router's network list (And while you're there, set the DHCP server to always give the same address to the Dingz and to the ioBroker server.)
 
 In the lower part you can define, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller. But a button can be physically wired to a light and still act on ioBroker programming. 
 

@@ -197,10 +197,7 @@ class Dingz extends utils.Adapter {
     programButton(number, action) {
         const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.${number}.${action}?value=true`;
         this.log.info("programming btn " + number + ": " + JSON.stringify(def));
-        let url = `${this.config.url}${API}action/btn${number}/${action}`;
-        if (url.indexOf("://") == -1) {
-            url = "http://" + url;
-        }
+        const url = `${this.config.url}${API}action/btn${number}/${action}`;
         this.log.info("POSTing " + url + "; " + def);
         // const urlencoded = new URLSearchParams();
         // urlencoded.append("get://" + def.substring("http://".length), "true")
@@ -229,7 +226,7 @@ class Dingz extends utils.Adapter {
             const url = this.config.url + API;
             this.log.info("Fetching " + url + addr);
             try {
-                const response = yield node_fetch_1.default("http://" + url + addr, { method: "get" });
+                const response = yield node_fetch_1.default(url + addr, { method: "get" });
                 if (response.status == 200) {
                     const result = yield response.json();
                     this.log.info("got " + JSON.stringify(result));

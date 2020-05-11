@@ -60,5 +60,11 @@ function save(callback) {
       obj[$this.attr('id')] = $this.val();
     }
   });
+  if (obj.url.indexOf("://") == -1) {
+    obj.url = "http://" + obj.url
+  }
+  if (obj.hostip.indexOf("://") == -1) {
+    obj.hostip = "http://" + obj.hostip
+  }
   callback(obj);
 }
