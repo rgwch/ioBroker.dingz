@@ -39,7 +39,10 @@ Make sure to select "Beliebig" even though it's situated on Github:
 
 ![](rsc/dingz_2.jpg)
 
+Find out the release you're interessed in: <https://github.com/rgwch/ioBroker.dingz/releases> and copy/paste the address of the .tar.gz link.
+
 Read the warning and click "install" if you agree anyway.
+
 The adapter should then be in the admin pages's list:
 
 ![](rsc/dingz_3.jpg)
@@ -75,10 +78,16 @@ Detailed informations on the Dingz and its connection state are found in dingz.X
 Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button (direct press or via app/web control). Example:
 
 ```javascript
-const b4="dingz.0.buttons.4."
+const b4="dingz.0.buttons.4.";
+const aussenlicht="lightify.0.aussenlicht.on";
 
 on({id:b4+"single"},()=>{
     log("Button 4 single press received","info")
+    // Garden lights on for 3 Minutes
+    setState(aussenlicht,true)
+    setTimeout(()=>{
+      setState(aussenlicht,false)
+    },180000)
 })
 
 on({id:b4+"double"},()=>{
@@ -125,3 +134,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## More like this
+
+* ['MyStrom WiFi Switch' Adater](http://github.com/rgwch/ioBroker.mystrom-wifi-switch)
+* ['MyStrom WiFi Button' Adapter](http://github.com/rgwch/ioBroker.mystrom-wifi-button)
