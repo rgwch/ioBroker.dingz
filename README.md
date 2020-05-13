@@ -109,6 +109,10 @@ on({id: b4+"long"},()=>{
 
 ## Changelog
 
+### 0.2.0
+ * (rgwch) added press_release state
+ * Better handling of connection failures
+
 ### 0.1.0
 * (rgwch) initial release
 

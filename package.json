@@ -1,6 +1,6 @@
 {
   "name": "iobroker.dingz",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Control of Dingz (http://www.dingz.ch) switches",
   "author": {
     "name": "rgwch",
@@ -22,10 +22,8 @@
     "@iobroker/adapter-core": "^2.4.0",
     "@types/lodash": "^4.14.150",
     "@types/node-fetch": "^2.5.7",
-    "live-server": "^1.2.1",
     "lodash": "^4.17.15",
-    "node-fetch": "^2.6.0",
-    "puppeteer": "^3.0.4"
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "@iobroker/testing": "^2.2.0",

@@ -261,7 +261,7 @@ class Dingz extends utils.Adapter {
     await this.createButtonState(btn, "single")
     await this.createButtonState(btn, "double")
     await this.createButtonState(btn, "long")
-    // await this.createButtonState(btn, "press_release")
+    await this.createButtonState(btn, "press_release")
   }
 
   private async createButtonState(button: number, substate: string): Promise<void> {
@@ -276,7 +276,9 @@ class Dingz extends utils.Adapter {
       },
       native: {}
     })
-    await this.programButton(button, substate)
+    if (substate != "press_release") {
+      await this.programButton(button, substate)
+    }
   }
 
   private programButton(number: number, action: string): Promise<void> {
@@ -284,8 +286,6 @@ class Dingz extends utils.Adapter {
     this.log.info("programming btn " + number + ": " + JSON.stringify(def))
     const url = `${this.config.url}${API}action/btn${number}/${action}`
     this.log.info("POSTing " + url + "; " + def)
-    // const urlencoded = new URLSearchParams();
-    // urlencoded.append("get://" + def.substring("http://".length), "true")
     return fetch(url, {
       method: "POST",
       headers: {
@@ -293,20 +293,15 @@ class Dingz extends utils.Adapter {
       },
       body: "get://" + def.substring("http://".length),
       redirect: "follow"
-    }).then(() => {
-      console.log("POST succesful")
+    }).then(response => {
+      if (response.status != 200) {
+        this.log.error("Error while POSTing command " + response.status + ", " + response.statusText)
+      } else {
+        this.log.info("POST succesful")
+      }
+    }).catch(err => {
+      this.log.error("Exception whilePOSTing: " + err)
     })
-      .catch(err => {
-        this.log.error(err)
-      })
-
-
-    /*
-    await this.setStateAsync(`buttons.${number}.generic`, def + "generic")
-    await this.setStateAsync(`buttons.${number}.single`, def + "single")
-    await this.setStateAsync(`buttons.${number}.double`, def + "double")
-    await this.setStateAsync(`buttons.${number}.long`, def + "long")
-    */
   }
 
 
