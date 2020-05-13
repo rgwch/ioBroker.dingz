@@ -1,0 +1,25 @@
+const puppeteer = require('puppeteer');
+const server = require('live-server');
+const path = require('path');
+const { tests } = require("@iobroker/testing");
+tests.integration(path.join(__dirname, ".."));
+
+  (async () => {
+    const params = {
+      port: 8181, // Set the server port. Defaults to 8080.
+      host: "0.0.0.0", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
+      root: path.join(__dirname,"../admin"), // Set root directory that's being served. Defaults to cwd.
+      open: false, // When false, it won't load your browser by default.
+      wait: 1000, // Waits for all changes, before reloading. Defaults to 0 sec.
+      logLevel: 2, // 0 = errors only, 1 = some, 2 = lots
+    };
+    server.start(params);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto('http://localhost:8181/index_m.html');
+    await page.screenshot({ path: 'example.png' });
+
+
+    await browser.close();
+    server.shutdown()
+  })();
