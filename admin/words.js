@@ -88,7 +88,7 @@ systemDictionary = {
   },
   "whichbutton": {
     "en": "Which of the dingz buttons should ioBroker control?",
-    "de": "Welche Buttons des Dingz soll ioBroker übernehmen?",
+    "de": "Welche Tasten des Dingz soll ioBroker übernehmen?",
     "ru": "какую из кнопок dingz должен контролировать ioBroker?",
     "pt": "qual dos botões dingz o ioBroker deve controlar?",
     "nl": "welke van de dingz-knoppen moet ioBroker bedienen?",
