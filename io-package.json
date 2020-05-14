@@ -3,6 +3,18 @@
     "name": "dingz",
     "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Extend states with press_release",
+        "de": "Erweitern Sie Zustände mit press_release",
+        "ru": "Расширьте штаты с помощью press_release",
+        "pt": "Estender estados com press_release",
+        "nl": "Verleng staten met press_release",
+        "fr": "Étendre les états avec press_release",
+        "it": "Estendi gli stati con press_release",
+        "es": "Extienda estados con press_release",
+        "pl": "Rozszerz stany za pomocą press_release",
+        "zh-cn": "使用press_release扩展状态"
+      },
       "0.0.1": {
         "en": "initial release",
         "de": "Erstveröffentlichung",

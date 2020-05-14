@@ -132,8 +132,8 @@ class Dingz extends utils.Adapter {
 
     // fetch informations about our dingz. If successful, set info.connection to true (making the indicator "green")
     const di = await this.doFetch("device")
-    if (di.error) {
-      this.log.error("Could not connect to device. Errmsg: " + di.error)
+    if (!di) {
+      this.log.error("Could not connect to device.")
     } else {
       const keys = Object.keys(di)
       const mac = keys[0]
