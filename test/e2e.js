@@ -1,3 +1,4 @@
+/*
 const puppeteer = require('puppeteer');
 const server = require('live-server');
 const path = require('path');
@@ -23,3 +24,4 @@ tests.integration(path.join(__dirname, ".."));
     await browser.close();
     server.shutdown()
   })();
+*/
