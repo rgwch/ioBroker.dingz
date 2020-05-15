@@ -187,18 +187,24 @@ class Dingz extends utils.Adapter {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
       if (!state.ack) {
         // change came from UI or program
+        /* Todo: Doc how simulate button press 
         const offs = "dingz.0.buttons.".length
         const subid = id.substr(offs).replace(/\./g, "/")
         const url = this.config.url + API + "action/btn" + subid
-        this.log.debug("POSTing " + url)
-
-        fetch(url, { method: "POST", body: state.val as string, redirect: "follow" }).then(posted => {
+        this.log.info("POSTing " + url)
+        const headers={
+          "Content-Type":"application/x-www-form-urlencoded",
+        }
+        const enc=new URLSearchParams()
+        enc.append("value","true")
+        fetch(url, { method: "POST", headers:headers, body: enc, redirect: "follow" }).then(posted => {
           if (posted.status !== 200) {
             this.log.error("Error POSTing state " + posted.status + ", " + posted.statusText)
           }
         }).catch(err => {
           this.log.error("Exeption while POSTing: " + err)
         })
+        */
       }
     } else {
       this.log.info(`state ${id} deleted`);
