@@ -99,7 +99,7 @@ class Dingz extends utils.Adapter {
     });
 
     this.on("ready", this.onReady.bind(this));
-    // this.on("stateChange", this.onStateChange.bind(this));
+    this.on("stateChange", this.onStateChange.bind(this));
     // this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
 
@@ -149,7 +149,7 @@ class Dingz extends utils.Adapter {
         this.setStateAsync("temperature", temp.temperature, true)
       })
 
-      // this.subscribeStates("*");
+      this.subscribeStates("*.press_release");
 
       // Read temperature regularly and set state accordingly
       this.timer = setInterval(() => {
@@ -180,8 +180,8 @@ class Dingz extends utils.Adapter {
 
   /**
    * Is called if a subscribed state changes
-   * 
-   
+   */
+
   private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
     if (state) {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -189,18 +189,22 @@ class Dingz extends utils.Adapter {
         // change came from UI or program
         const offs = "dingz.0.buttons.".length
         const subid = id.substr(offs).replace(/\./g, "/")
-        const url = "http://" + this.config.url + API + "action/btn" + subid
+        const url = this.config.url + API + "action/btn" + subid
         this.log.debug("POSTing " + url)
 
         fetch(url, { method: "POST", body: state.val as string, redirect: "follow" }).then(posted => {
-          return posted.text()
-        }).then(text => console.log(text))
+          if (posted.status !== 200) {
+            this.log.error("Error POSTing state " + posted.status + ", " + posted.statusText)
+          }
+        }).catch(err => {
+          this.log.error("Exeption while POSTing: " + err)
+        })
       }
     } else {
       this.log.info(`state ${id} deleted`);
     }
   }
-*/
+
 
 
   /**
