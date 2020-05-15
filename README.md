@@ -1,6 +1,6 @@
 ![Logo](admin/dingz.png)
-[![Build Status](https://travis-ci.com/rgwch/ioBroker.dingz.svg?branch=master)](https://travis-ci.com/rgwch/ioBroker.dingz)
 [![NPM version](http://img.shields.io/npm/v/iobroker.dingz.svg)](https://www.npmjs.com/package/iobroker.dingz)
+[![Build Status](https://travis-ci.com/rgwch/ioBroker.dingz.svg?branch=master)](https://travis-ci.com/rgwch/ioBroker.dingz)
 
 # ioBroker.dingz
 
