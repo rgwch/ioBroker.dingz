@@ -1,4 +1,7 @@
 ![Logo](admin/dingz.png)
+[![NPM version](http://img.shields.io/npm/v/iobroker.dingz.svg)](https://www.npmjs.com/package/iobroker.dingz)
+[![Build Status](https://travis-ci.com/rgwch/ioBroker.dingz.svg?branch=master)](https://travis-ci.com/rgwch/ioBroker.dingz)
+
 # ioBroker.dingz
 
 ## What it is
@@ -31,7 +34,11 @@ Besides the mains current connection, any or all of the buttons can connect to l
 ### Fetch and install ioBroker.Dingz
 
 This adapter is not part of the official ioBroker distribution. So it will not show up in ioBroker admin's adapter list.
-You can install it as a custom adapter from the admin-ui (http://{ioBroker-address}:8081):
+You can install it either directly via NPM:
+
+[![NPM](https://nodei.co/npm/iobroker.dingz.png)](https://nodei.co/npm/iobroker.dingz/)
+
+or as a custom adapter from the admin-ui (http://{ioBroker-address}:8081):
 
 ![](rsc/dingz_1.jpg)
 

@@ -26,7 +26,7 @@ class Dingz extends utils.Adapter {
         super(Object.assign(Object.assign({}, options), { name: "dingz" }));
         this.interval = 30;
         this.on("ready", this.onReady.bind(this));
-        // this.on("stateChange", this.onStateChange.bind(this));
+        this.on("stateChange", this.onStateChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
@@ -55,8 +55,8 @@ class Dingz extends utils.Adapter {
             this.log.debug("Polling Interval: " + this.interval);
             // fetch informations about our dingz. If successful, set info.connection to true (making the indicator "green")
             const di = yield this.doFetch("device");
-            if (di.error) {
-                this.log.error("Could not connect to device. Errmsg: " + di.error);
+            if (!di) {
+                this.log.error("Could not connect to device.");
             }
             else {
                 const keys = Object.keys(di);
@@ -70,7 +70,7 @@ class Dingz extends utils.Adapter {
                 this.doFetch("temp").then(temp => {
                     this.setStateAsync("temperature", temp.temperature, true);
                 });
-                // this.subscribeStates("*");
+                this.subscribeStates("*.press_release");
                 // Read temperature regularly and set state accordingly
                 this.timer = setInterval(() => {
                     this.doFetch("temp").then(temp => {
@@ -97,27 +97,36 @@ class Dingz extends utils.Adapter {
     }
     /**
      * Is called if a subscribed state changes
-     *
-     
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-      if (state) {
-        this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        if (!state.ack) {
-          // change came from UI or program
-          const offs = "dingz.0.buttons.".length
-          const subid = id.substr(offs).replace(/\./g, "/")
-          const url = "http://" + this.config.url + API + "action/btn" + subid
-          this.log.debug("POSTing " + url)
-  
-          fetch(url, { method: "POST", body: state.val as string, redirect: "follow" }).then(posted => {
-            return posted.text()
-          }).then(text => console.log(text))
+     */
+    onStateChange(id, state) {
+        if (state) {
+            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            if (!state.ack) {
+                // change came from UI or program
+                /* Todo: Doc how simulate button press
+                const offs = "dingz.0.buttons.".length
+                const subid = id.substr(offs).replace(/\./g, "/")
+                const url = this.config.url + API + "action/btn" + subid
+                this.log.info("POSTing " + url)
+                const headers={
+                  "Content-Type":"application/x-www-form-urlencoded",
+                }
+                const enc=new URLSearchParams()
+                enc.append("value","true")
+                fetch(url, { method: "POST", headers:headers, body: enc, redirect: "follow" }).then(posted => {
+                  if (posted.status !== 200) {
+                    this.log.error("Error POSTing state " + posted.status + ", " + posted.statusText)
+                  }
+                }).catch(err => {
+                  this.log.error("Exeption while POSTing: " + err)
+                })
+                */
+            }
         }
-      } else {
-        this.log.info(`state ${id} deleted`);
-      }
+        else {
+            this.log.info(`state ${id} deleted`);
+        }
     }
-  */
     /**
      * Called from onReady(). We create our State structure:
      * dingz.X:{

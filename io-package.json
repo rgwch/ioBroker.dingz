@@ -1,11 +1,23 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "news": {
+      "0.2.1":{
+        "en": "added travis ci",
+        "de": "Travis ci hinzugefügt",
+        "ru": "добавил Трэвис CI",
+        "pt": "travis ci adicionado",
+        "nl": "voegde travis ci toe",
+        "fr": "ajouté travis ci",
+        "it": "aggiunto travis ci",
+        "es": "travis añadido ci",
+        "pl": "dodano travis ci",
+        "zh-cn": "添加了travis ci"
+      },
       "0.2.0": {
         "en": "Extend states with press_release",
-        "de": "Erweitern Sie Zustände mit press_release",
+        "de": "States um press_release erweitert",
         "ru": "Расширьте штаты с помощью press_release",
         "pt": "Estender estados com press_release",
         "nl": "Verleng staten met press_release",
