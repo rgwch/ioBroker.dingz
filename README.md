@@ -66,6 +66,8 @@ The configuration dialog should open after successful creation of the instance.
 
 Enter the IP Address of the Dingz for this instance. You need also to indicate the address of the ioBroker server and the port you've set when configuring the "Simple RESTful" Adapter. By default, that's 8087. The symbolic network name of the ioBroker Server, e.g. `http://homecontrol.local:8087` will probably not work, so better find out the IP address, e.g. in the router's network list (And while you're there, you'll probably want to instruct the DHCP server to always give the same address to the Dingz and to the ioBroker server.)
 
+The righmost field is for the polling interval, i.e. the time span between two requests to the Dingz temperature value in seconds. Note that this is not really the room temperature since the Dingz produces some heat which makes the temperature indicator show too high values.
+
 In the lower part you can define, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller. But a button can be physically wired to a light and still act on ioBroker programming. 
 
 ## Use
@@ -115,6 +117,10 @@ on({id: b4+"long"},()=>{
 
 
 ## Changelog
+
+### 0.3.0
+
+ * (rgwch) made polling interval configurable
 
 ### 0.2.0
  * (rgwch) added press_release state
