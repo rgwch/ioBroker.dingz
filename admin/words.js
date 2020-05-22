@@ -1,5 +1,9 @@
-/*global systemDictionary:true */
+/**
+ * This is the translation file. See https://translator.iobroker.in 
+ */
 "use strict";
+
+/*global systemDictionary:true */
 
 systemDictionary = {
   "dingz adapter settings": {
@@ -98,5 +102,18 @@ systemDictionary = {
     "pl": "który z przycisków dingz powinien kontrolować ioBroker?",
     "zh-cn": "ioBroker应该控制哪个dingz按钮？"
 
+  },
+  "polling interval": {
+    "en": "polling interval (temperature)",
+    "de": "Abfrageintervall (Temperatur)",
+    "ru": "интервал опроса (температура)",
+    "pt": "intervalo de pesquisa (temperatura)",
+    "nl": "polling interval (temperatuur)",
+    "fr": "intervalle d'interrogation (température)",
+    "it": "intervallo di polling (temperatura)",
+    "es": "intervalo de sondeo (temperatura)",
+    "pl": "interwał odpytywania (temperatura)",
+    "zh-cn": "轮询间隔（温度）"
   }
+
 };

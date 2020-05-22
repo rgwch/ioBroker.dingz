@@ -1,9 +1,21 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "news": {
-      "0.2.1":{
+      "0.3.0": {
+        "en": "added config for polling interval",
+        "de": "Konfiguration für Abfrageintervall hinzugefügt",
+        "ru": "добавлен конфиг для интервала опроса",
+        "pt": "configuração adicionada para o intervalo de pesquisa",
+        "nl": "configuratie toegevoegd voor polling-interval",
+        "fr": "config ajoutée pour l'intervalle d'interrogation",
+        "it": "aggiunta la configurazione per l'intervallo di polling",
+        "es": "configuración agregada para el intervalo de sondeo",
+        "pl": "dodano konfigurację interwału odpytywania",
+        "zh-cn": "为轮询间隔添加了配置"
+      },
+      "0.2.1": {
         "en": "added travis ci",
         "de": "Travis ci hinzugefügt",
         "ru": "добавил Трэвис CI",

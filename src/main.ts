@@ -105,6 +105,9 @@ class Dingz extends utils.Adapter {
 
   }
 
+  /**
+   * We could find Dingz via its UDB broadcast. Unused now.
+   */
   private async findDingz(): Promise<string> {
     return new Promise((resolve) => {
       const udp = new UDP(this.log)

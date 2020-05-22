@@ -5,6 +5,8 @@ function load(settings, onChange) {
     const href = `${window.location.protocol || "http:"}//${window.location.hostname || "127.0.0.1"}:8087`
     settings.hostip = href
   }
+  // Boilerplate code: Fetch boolean and text values from config to the UI and add "changed" handlers
+  // to each input element identified by class "value"
   $('.value').each(function () {
     var $key = $(this);
     var id = $key.attr('id');
@@ -41,6 +43,7 @@ function load(settings, onChange) {
       .catch(err => console.log("error", err));
   })
   */
+ // We don't need the other tabs in this version
   $('#sw-btn').hide()
   $('#sw-pir').hide()
   onChange(false);
@@ -48,6 +51,7 @@ function load(settings, onChange) {
   if (M) M.updateTextFields();
 }
 
+// Boilerplate code: Fetch values from all elements classed "value" and store them in the config.
 // This will be called by the admin adapter when the user presses the save button
 function save(callback) {
   // example: select elements with class=value and build settings object
