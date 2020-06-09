@@ -30,6 +30,9 @@ class Dingz extends utils.Adapter {
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
+    /**
+     * We could find Dingz via its UDB broadcast. Unused now.
+     */
     findDingz() {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => {
@@ -75,6 +78,12 @@ class Dingz extends utils.Adapter {
                 this.timer = setInterval(() => {
                     this.doFetch("temp").then(temp => {
                         this.setStateAsync("temperature", temp.temperature, true);
+                    });
+                    this.doFetch("light").then((pir) => {
+                        this.setStateAsync("pir.intensity", pir.intensity);
+                        this.setStateAsync("pir.phase", pir.state);
+                        this.setStateAsync("pir.adc0", pir.raw.adc0);
+                        this.setStateAsync("pir.adc1", pir.raw.adc1);
                     });
                 }, this.interval * 1000);
             }
@@ -151,6 +160,58 @@ class Dingz extends utils.Adapter {
                 common: {
                     name: "Temperature",
                     type: "string",
+                    role: "indicator",
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
+            yield this.setObjectAsync("pir", {
+                type: "channel",
+                common: {
+                    name: "PIR",
+                    role: "state"
+                },
+                native: {}
+            });
+            yield this.setObjectAsync("pir.intensity", {
+                type: "state",
+                common: {
+                    name: "intensity",
+                    type: "number",
+                    role: "indicator",
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
+            yield this.setObjectAsync("pir.phase", {
+                type: "state",
+                common: {
+                    name: "phase",
+                    type: "string",
+                    role: "indicator",
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
+            yield this.setObjectAsync("pir.adc0", {
+                type: "state",
+                common: {
+                    name: "adc0",
+                    type: "number",
+                    role: "indicator",
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
+            yield this.setObjectAsync("pir.adc1", {
+                type: "state",
+                common: {
+                    name: "adc1",
+                    type: "number",
                     role: "indicator",
                     read: true,
                     write: false

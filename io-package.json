@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "news": {
+      "0.4.0":{
+        "en": "added brightness indicator",
+        "de": "Helligkeitsanzeige hinzugefügt",
+        "ru": "добавлен индикатор яркости",
+        "pt": "indicador de brilho adicionado",
+        "nl": "toegevoegde helderheidsindicator",
+        "fr": "indicateur de luminosité ajouté",
+        "it": "aggiunto indicatore di luminosità",
+        "es": "indicador de brillo agregado",
+        "pl": "dodano wskaźnik jasności",
+        "zh-cn": "增加了亮度指示器"
+      },
       "0.3.0": {
         "en": "added config for polling interval",
         "de": "Konfiguration für Abfrageintervall hinzugefügt",

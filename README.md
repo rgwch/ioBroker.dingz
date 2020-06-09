@@ -118,6 +118,10 @@ on({id: b4+"long"},()=>{
 
 ## Changelog
 
+### 0.4.0
+
+* (rgwch) added polling of brightness sensor
+
 ### 0.3.0
 
  * (rgwch) made polling interval configurable
