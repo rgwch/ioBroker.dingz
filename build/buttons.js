@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const main_1 = require("./main");
+const node_fetch_1 = require("node-fetch");
 class Buttons {
     constructor(d) {
         this.d = d;
@@ -43,7 +44,7 @@ class Buttons {
             yield this.createButtonState(btn, "single");
             yield this.createButtonState(btn, "double");
             yield this.createButtonState(btn, "long");
-            yield this.createButtonState(btn, "press_release");
+            // await this.createButtonState(btn, "press_release")
         });
     }
     createButtonState(button, substate) {
@@ -59,9 +60,7 @@ class Buttons {
                 },
                 native: {}
             });
-            if (substate != "press_release") {
-                yield this.programButton(button, substate);
-            }
+            yield this.programButton(button, substate);
         });
     }
     programButton(number, action) {
@@ -69,7 +68,7 @@ class Buttons {
         this.d.log.info("programming btn " + number + ": " + JSON.stringify(def));
         const url = `${this.d.config.url}${main_1.API}action/btn${number}/${action}`;
         this.d.log.info("POSTing " + url + "; " + def);
-        return fetch(url, {
+        return node_fetch_1.default(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.dingz",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Control of Dingz (http://www.dingz.ch) switches",
   "author": {
     "name": "rgwch",

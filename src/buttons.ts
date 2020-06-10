@@ -1,4 +1,5 @@
 import { Dingz, API } from "./main"
+import fetch from "node-fetch"
 
 export class Buttons {
   constructor(private d: Dingz) { }
@@ -31,7 +32,7 @@ export class Buttons {
     await this.createButtonState(btn, "single")
     await this.createButtonState(btn, "double")
     await this.createButtonState(btn, "long")
-    await this.createButtonState(btn, "press_release")
+    // await this.createButtonState(btn, "press_release")
   }
 
   private async createButtonState(button: number, substate: string): Promise<void> {
@@ -46,9 +47,7 @@ export class Buttons {
       },
       native: {}
     })
-    if (substate != "press_release") {
-      await this.programButton(button, substate)
-    }
+    await this.programButton(button, substate)
   }
 
   private programButton(number: number, action: string): Promise<void> {

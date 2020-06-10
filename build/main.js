@@ -120,12 +120,12 @@ class Dingz extends utils.Adapter {
      */
     onStateChange(id, state) {
         if (state) {
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
             if (!state.ack) {
                 // change came from UI or program
                 const subid = id.substr(this.namespace.length + 1);
                 if (subid.startsWith("dimmer")) {
-                    this.log.info("dimmer changed");
+                    this.log.info("dimmer changed " + id);
                     this.dimmers.sendDimmerState(subid, state);
                 }
             }
