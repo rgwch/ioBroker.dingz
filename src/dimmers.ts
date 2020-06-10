@@ -69,6 +69,8 @@ export class Dimmers {
       const action=parts[2]
       if(action=="on"){
         await this.d.doFetch(`dimmer/${num}/${state.val} ? "on" : "off`)
+      }else{
+        
       }
     }
   }
