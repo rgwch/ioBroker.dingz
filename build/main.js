@@ -19,12 +19,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("@iobroker/adapter-core");
 const node_fetch_1 = require("node-fetch");
 const udp_1 = require("./udp");
+const pir_1 = require("./pir");
+const buttons_1 = require("./buttons");
 // That's the only supported API as of now, AFAIK
-const API = "/api/v1/";
+exports.API = "/api/v1/";
 class Dingz extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "dingz" }));
         this.interval = 30;
+        this.buttons = new buttons_1.Buttons(this);
+        this.pir = new pir_1.PIR(this);
         this.on("ready", this.onReady.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
@@ -76,17 +80,22 @@ class Dingz extends utils.Adapter {
                 this.subscribeStates("*.press_release");
                 // Read temperature regularly and set state accordingly
                 this.timer = setInterval(() => {
-                    this.doFetch("temp").then(temp => {
-                        this.setStateAsync("temperature", temp.temperature, true);
-                    });
-                    this.doFetch("light").then((pir) => {
-                        this.setStateAsync("pir.intensity", pir.intensity);
-                        this.setStateAsync("pir.phase", pir.state);
-                        this.setStateAsync("pir.adc0", pir.raw.adc0);
-                        this.setStateAsync("pir.adc1", pir.raw.adc1);
-                    });
+                    this.fetchValues;
                 }, this.interval * 1000);
             }
+        });
+    }
+    fetchValues() {
+        this.doFetch("temp").then(temp => {
+            this.setStateAsync("temperature", temp.temperature, true);
+        });
+        this.doFetch("light").then((pir) => {
+            this.setStateAsync("pir.intensity", pir.intensity);
+            this.setStateAsync("pir.phase", pir.state);
+            this.setStateAsync("pir.adc0", pir.raw.adc0);
+            this.setStateAsync("pir.adc1", pir.raw.adc1);
+        });
+        this.doFetch("dimmer").then((res) => {
         });
     }
     /**
@@ -150,7 +159,20 @@ class Dingz extends utils.Adapter {
      *      btn4: ButtonState
      *
      *    },
-     *   temperature: string
+     *   temperature: string,
+     *   pir: {
+     *      intensity: number,
+     *      phase: day|night|twilight,
+     *      adc0: number,
+     *      adc1: number
+     *   }
+     *    dimmers:{
+     *      dim0: DimmerState,
+     *      dim1: DimmerState,
+     *      dim2: DimmerState,
+     *      dim3: DimmerState
+     *    }
+     *
      * }
      */
     createObjects() {
@@ -166,132 +188,13 @@ class Dingz extends utils.Adapter {
                 },
                 native: {}
             });
-            yield this.setObjectAsync("pir", {
-                type: "channel",
-                common: {
-                    name: "PIR",
-                    role: "state"
-                },
-                native: {}
-            });
-            yield this.setObjectAsync("pir.intensity", {
-                type: "state",
-                common: {
-                    name: "intensity",
-                    type: "number",
-                    role: "indicator",
-                    read: true,
-                    write: false
-                },
-                native: {}
-            });
-            yield this.setObjectAsync("pir.phase", {
-                type: "state",
-                common: {
-                    name: "phase",
-                    type: "string",
-                    role: "indicator",
-                    read: true,
-                    write: false
-                },
-                native: {}
-            });
-            yield this.setObjectAsync("pir.adc0", {
-                type: "state",
-                common: {
-                    name: "adc0",
-                    type: "number",
-                    role: "indicator",
-                    read: true,
-                    write: false
-                },
-                native: {}
-            });
-            yield this.setObjectAsync("pir.adc1", {
-                type: "state",
-                common: {
-                    name: "adc1",
-                    type: "number",
-                    role: "indicator",
-                    read: true,
-                    write: false
-                },
-                native: {}
-            });
-            yield this.setObjectAsync("buttons", {
-                type: "channel",
-                common: {
-                    name: "button",
-                    role: "state"
-                },
-                native: {}
-            });
-            this.config.trackbtn1 && (yield this.createButton(1));
-            this.config.trackbtn2 && (yield this.createButton(2));
-            this.config.trackbtn3 && (yield this.createButton(3));
-            this.config.trackbtn4 && (yield this.createButton(4));
-        });
-    }
-    createButton(btn) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.setObjectAsync("buttons." + btn, {
-                type: "channel",
-                common: {
-                    name: "Button " + btn,
-                },
-                native: {}
-            });
-            yield this.createButtonState(btn, "generic");
-            yield this.createButtonState(btn, "single");
-            yield this.createButtonState(btn, "double");
-            yield this.createButtonState(btn, "long");
-            yield this.createButtonState(btn, "press_release");
-        });
-    }
-    createButtonState(button, substate) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.setObjectAsync(`buttons.${button}.${substate}`, {
-                type: "state",
-                common: {
-                    name: substate,
-                    type: "boolean",
-                    role: "action",
-                    read: true,
-                    write: true
-                },
-                native: {}
-            });
-            if (substate != "press_release") {
-                yield this.programButton(button, substate);
-            }
-        });
-    }
-    programButton(number, action) {
-        const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.${number}.${action}?value=true`;
-        this.log.info("programming btn " + number + ": " + JSON.stringify(def));
-        const url = `${this.config.url}${API}action/btn${number}/${action}`;
-        this.log.info("POSTing " + url + "; " + def);
-        return node_fetch_1.default(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: "get://" + def.substring("http://".length),
-            redirect: "follow"
-        }).then(response => {
-            if (response.status != 200) {
-                this.log.error("Error while POSTing command " + response.status + ", " + response.statusText);
-            }
-            else {
-                this.log.info("POST succesful");
-            }
-        }).catch(err => {
-            this.log.error("Exception whilePOSTing: " + err);
+            yield this.buttons.createButtonObjects();
+            yield this.pir.createPIRObjects();
         });
     }
     doFetch(addr) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = this.config.url + API;
+            const url = this.config.url + exports.API;
             this.log.info("Fetching " + url + addr);
             try {
                 const response = yield node_fetch_1.default(url + addr, { method: "get" });
@@ -314,6 +217,7 @@ class Dingz extends utils.Adapter {
         });
     }
 }
+exports.Dingz = Dingz;
 if (module.parent) {
     // Export the constructor in compact mode
     module.exports = (options) => new Dingz(options);

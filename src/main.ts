@@ -10,6 +10,9 @@ import * as utils from "@iobroker/adapter-core";
 import fetch from "node-fetch"
 import * as _ from "lodash"
 import { UDP } from "./udp"
+import { PIR } from "./pir"
+import { Buttons } from "./buttons"
+import { Dimmers } from "./dimmers"
 
 /*
  *  Declare answers we might get from the dingz
@@ -49,6 +52,24 @@ type ButtonState = {
   press_release: boolean;
 }
 
+export type DimmerState = {
+  on: boolean;
+  value: number;
+  ramp: number;
+  disabled: boolean;
+  index: {
+    relative: number;
+    absolute: number;
+  };
+}
+
+export type DimmersState = {
+  d0: DimmerState;
+  d1: DimmerState;
+  d2: DimmerState;
+  d3: DimmerState;
+}
+
 type PirState = {
   success: boolean;
   intensity: number;
@@ -80,7 +101,7 @@ type PuckVersion = {
 }
 
 // That's the only supported API as of now, AFAIK
-const API = "/api/v1/"
+export const API = "/api/v1/"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -98,9 +119,12 @@ declare global {
   }
 }
 
-class Dingz extends utils.Adapter {
+export class Dingz extends utils.Adapter {
   private interval = 30
   private timer: any
+  private buttons = new Buttons(this)
+  private pir = new PIR(this)
+  private dimmers = new Dimmers(this)
 
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
@@ -139,7 +163,7 @@ class Dingz extends utils.Adapter {
     this.setState("info.connection", false, true);
 
     // don't accept too short polling intervals
-    this.interval = Math.max((this.config.interval || 60), 60)
+    this.interval = Math.max((this.config.interval || 30), 30)
     this.log.debug("Polling Interval: " + this.interval)
 
 
@@ -154,30 +178,35 @@ class Dingz extends utils.Adapter {
       this.setState("info.deviceInfo.details", di[mac], true)
       this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
       this.setState("info.connection", true, true);
-      // we're connected. So Set up State Objects
+      // we're connected. So set up State Objects
       await this.createObjects()
 
+      this.subscribeStates("dimmers.*");
 
-      this.doFetch("temp").then(temp => {
-        this.setStateAsync("temperature", temp.temperature, true)
-      })
-
-      this.subscribeStates("*.press_release");
-
-      // Read temperature regularly and set state accordingly
+      // initial read
+      this.fetchValues()
+      // Read temperature, PIR and dimmers regularly and set states accordingly
       this.timer = setInterval(() => {
-        this.doFetch("temp").then(temp => {
-          this.setStateAsync("temperature", temp.temperature, true)
-        })
-        this.doFetch("light").then((pir: PirState) => {
-          this.setStateAsync("pir.intensity", pir.intensity)
-          this.setStateAsync("pir.phase", pir.state)
-          this.setStateAsync("pir.adc0", pir.raw.adc0)
-          this.setStateAsync("pir.adc1", pir.raw.adc1)
-        })
-
+        this.fetchValues
       }, this.interval * 1000)
     }
+
+  }
+
+  private fetchValues(): void {
+    this.doFetch("temp").then(temp => {
+      this.setStateAsync("temperature", temp.temperature, true)
+    })
+    this.doFetch("light").then((pir: PirState) => {
+      this.setStateAsync("pir.intensity", pir.intensity)
+      this.setStateAsync("pir.phase", pir.state)
+      this.setStateAsync("pir.adc0", pir.raw.adc0)
+      this.setStateAsync("pir.adc1", pir.raw.adc1)
+    })
+
+    this.doFetch("dimmer").then((res: DimmersState) => {
+      this.dimmers.setDimmerStates(res)
+    })
 
   }
 
@@ -206,24 +235,14 @@ class Dingz extends utils.Adapter {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
       if (!state.ack) {
         // change came from UI or program
-        /* Todo: Doc how simulate button press 
-        const offs = "dingz.0.buttons.".length
-        const subid = id.substr(offs).replace(/\./g, "/")
-        const url = this.config.url + API + "action/btn" + subid
-        this.log.info("POSTing " + url)
-        const headers={
-          "Content-Type":"application/x-www-form-urlencoded",
+        if (id.startsWith("dimmer")) {
+          this.log.info("dimmer changed")
+          this.dimmers.sendDimmerState(id, state)
         }
-        const enc=new URLSearchParams()
-        enc.append("value","true")
-        fetch(url, { method: "POST", headers:headers, body: enc, redirect: "follow" }).then(posted => {
-          if (posted.status !== 200) {
-            this.log.error("Error POSTing state " + posted.status + ", " + posted.statusText)
-          }
-        }).catch(err => {
-          this.log.error("Exeption while POSTing: " + err)
-        })
-        */
+
+      } else {
+        // change came from the device
+
       }
     } else {
       this.log.info(`state ${id} deleted`);
@@ -246,7 +265,20 @@ class Dingz extends utils.Adapter {
    *      btn4: ButtonState
    *      
    *    },
-   *   temperature: string
+   *   temperature: string,
+   *   pir: {
+   *      intensity: number,
+   *      phase: day|night|twilight,
+   *      adc0: number,
+   *      adc1: number
+   *   }
+   *    dimmers:{
+   *      dim0: DimmerState,
+   *      dim1: DimmerState,
+   *      dim2: DimmerState,
+   *      dim3: DimmerState
+   *    }
+   * 
    * }
    */
   private async createObjects(): Promise<void> {
@@ -262,135 +294,14 @@ class Dingz extends utils.Adapter {
       native: {}
 
     })
-    await this.setObjectAsync("pir", {
-      type: "channel",
-      common: {
-        name: "PIR",
-        role: "state"
-      },
-      native: {}
-    })
-
-    await this.setObjectAsync("pir.intensity", {
-      type: "state",
-      common: {
-        name: "intensity",
-        type: "number",
-        role: "indicator",
-        read: true,
-        write: false
-      },
-      native: {}
-    })
-
-    await this.setObjectAsync("pir.phase", {
-      type: "state",
-      common: {
-        name: "phase",
-        type: "string",
-        role: "indicator",
-        read: true,
-        write: false
-      },
-      native: {}
-    })
-
-    await this.setObjectAsync("pir.adc0", {
-      type: "state",
-      common: {
-        name: "adc0",
-        type: "number",
-        role: "indicator",
-        read: true,
-        write: false
-      },
-      native: {}
-    })
-    await this.setObjectAsync("pir.adc1", {
-      type: "state",
-      common: {
-        name: "adc1",
-        type: "number",
-        role: "indicator",
-        read: true,
-        write: false
-      },
-      native: {}
-    })
-
-    await this.setObjectAsync("buttons", {
-      type: "channel",
-      common: {
-        name: "button",
-        role: "state"
-      },
-      native: {}
-    })
-
-    this.config.trackbtn1 && await this.createButton(1)
-    this.config.trackbtn2 && await this.createButton(2)
-    this.config.trackbtn3 && await this.createButton(3)
-    this.config.trackbtn4 && await this.createButton(4)
+    await this.buttons.createButtonObjects()
+    await this.pir.createPIRObjects()
+    await this.dimmers.createDimmerObjects()
   }
 
 
-  private async createButton(btn: number): Promise<void> {
-    await this.setObjectAsync("buttons." + btn, {
-      type: "channel",
-      common: {
-        name: "Button " + btn,
-      },
-      native: {}
-    })
-    await this.createButtonState(btn, "generic")
-    await this.createButtonState(btn, "single")
-    await this.createButtonState(btn, "double")
-    await this.createButtonState(btn, "long")
-    await this.createButtonState(btn, "press_release")
-  }
 
-  private async createButtonState(button: number, substate: string): Promise<void> {
-    await this.setObjectAsync(`buttons.${button}.${substate}`, {
-      type: "state",
-      common: {
-        name: substate,
-        type: "boolean",
-        role: "action",
-        read: true,
-        write: true
-      },
-      native: {}
-    })
-    if (substate != "press_release") {
-      await this.programButton(button, substate)
-    }
-  }
-
-  private programButton(number: number, action: string): Promise<void> {
-    const def = `${this.config.hostip}/set/dingz.${this.instance}.buttons.${number}.${action}?value=true`
-    this.log.info("programming btn " + number + ": " + JSON.stringify(def))
-    const url = `${this.config.url}${API}action/btn${number}/${action}`
-    this.log.info("POSTing " + url + "; " + def)
-    return fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: "get://" + def.substring("http://".length),
-      redirect: "follow"
-    }).then(response => {
-      if (response.status != 200) {
-        this.log.error("Error while POSTing command " + response.status + ", " + response.statusText)
-      } else {
-        this.log.info("POST succesful")
-      }
-    }).catch(err => {
-      this.log.error("Exception whilePOSTing: " + err)
-    })
-  }
-
-
-  private async doFetch(addr: string): Promise<any> {
+  public async doFetch(addr: string): Promise<any> {
     const url = this.config.url + API
 
     this.log.info("Fetching " + url + addr)
