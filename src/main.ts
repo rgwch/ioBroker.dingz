@@ -324,35 +324,7 @@ export class Dingz extends utils.Adapter {
     }
   }
 
-  public async doPost(addr: string, body: any): Promise<any> {
-    const url = this.config.url + API
-
-    this.log.info("Posting " + url + addr)
-    try {
-      const response = await fetch(url + addr, { 
-        method: "post",
-        headers: {
-          "Content-type": "application/json"
-        },
-        body: JSON.stringify(body),
-        redirect: "follow" 
-      })
-      if (response.status == 200) {
-        const result = await response.json()
-        this.log.info("got " + JSON.stringify(result))
-        return result
-
-      } else {
-        this.log.error("Error while fetching " + addr + ": " + response.status)
-        this.setState("info.connection", false, true);
-        return {}
-      }
-    } catch (err) {
-      this.log.error("Fatal error during fetch")
-      this.setState("info.connection", false, true);
-      return undefined
-    }
-  }
+  
 
 
   // /**

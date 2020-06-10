@@ -65,13 +65,49 @@ export class Dimmers {
     if (parts.length != 3) {
       this.d.log.error("bad dimmer id")
     } else {
-      const num=parts[1]
-      const action=parts[2]
-      if(action=="on"){
+      const num = parts[1]
+      const action = parts[2]
+      if (action == "on") {
         await this.d.doFetch(`dimmer/${num}/${state.val} ? "on" : "off`)
-      }else{
-        
+      } else {
+        if (action == "value") {
+          const ramp = await this.d.getStateAsync(`dimmers.${num}.ramp`)
+          this.doPost(num, state.val as number, ramp!.val as number)
+        }
       }
+    }
+  }
+
+  private async doPost(dimmer: string, value: number, ramp: number): Promise<any> {
+    const url = this.d.config.url + API + "dimmer/" + dimmer
+
+    this.d.log.info("Posting " + url)
+    try {
+      const encoded = new URLSearchParams()
+      encoded.append("value", value.toString())
+      encoded.append("ramp", ramp.toString())
+      const response = await fetch(url, {
+        method: "post",
+        headers: {
+          "Content-type": "x-www-form-urlencoded"
+        },
+        body: encoded,
+        redirect: "follow"
+      })
+      if (response.status == 200) {
+        const result = await response.json()
+        this.d.log.info("got " + JSON.stringify(result))
+        return result
+
+      } else {
+        this.d.log.error("Error while fetching " + url + ": " + response.status)
+        this.d.setState("info.connection", false, true);
+        return {}
+      }
+    } catch (err) {
+      this.d.log.error("Fatal error during fetch")
+      this.d.setState("info.connection", false, true);
+      return undefined
     }
   }
 }
