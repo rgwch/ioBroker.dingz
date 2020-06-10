@@ -64,10 +64,10 @@ export type DimmerState = {
 }
 
 export type DimmersState = {
-  d0: DimmerState;
-  d1: DimmerState;
-  d2: DimmerState;
-  d3: DimmerState;
+  "0": DimmerState;
+  "1": DimmerState;
+  "2": DimmerState;
+  "3": DimmerState;
 }
 
 type PirState = {
@@ -181,7 +181,7 @@ export class Dingz extends utils.Adapter {
       // we're connected. So set up State Objects
       await this.createObjects()
 
-      this.subscribeStates("dimmers.*");
+      this.subscribeStates(this.namespace + ".dimmers.*");
 
       // initial read
       this.fetchValues()
@@ -198,10 +198,10 @@ export class Dingz extends utils.Adapter {
       this.setStateAsync("temperature", temp.temperature, true)
     })
     this.doFetch("light").then((pir: PirState) => {
-      this.setStateAsync("pir.intensity", pir.intensity)
-      this.setStateAsync("pir.phase", pir.state)
-      this.setStateAsync("pir.adc0", pir.raw.adc0)
-      this.setStateAsync("pir.adc1", pir.raw.adc1)
+      this.setStateAsync("pir.intensity", pir.intensity, true)
+      this.setStateAsync("pir.phase", pir.state, true)
+      this.setStateAsync("pir.adc0", pir.raw.adc0, true)
+      this.setStateAsync("pir.adc1", pir.raw.adc1, true)
     })
 
     this.doFetch("dimmer").then((res: DimmersState) => {
@@ -235,9 +235,10 @@ export class Dingz extends utils.Adapter {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
       if (!state.ack) {
         // change came from UI or program
-        if (id.startsWith("dimmer")) {
+        const subid = id.substr(this.namespace.length + 1)
+        if (subid.startsWith("dimmer")) {
           this.log.info("dimmer changed")
-          this.dimmers.sendDimmerState(id, state)
+          this.dimmers.sendDimmerState(subid, state)
         }
 
       } else {
@@ -313,18 +314,18 @@ export class Dingz extends utils.Adapter {
         return result
 
       } else {
-        this.log.error("Error while fetching " + addr + ": " + response.status)
-        this.setState("info.connection", false, true);
+        this.log.error("Error while fetching " + url + addr + ": " + response.status)
+        // this.setState("info.connection", false, true);
         return {}
       }
     } catch (err) {
-      this.log.error("Fatal error during fetch")
+      this.log.error("Fatal error during fetch " + url + addr + "; " + err)
       this.setState("info.connection", false, true);
       return undefined
     }
   }
 
-  
+
 
 
   // /**

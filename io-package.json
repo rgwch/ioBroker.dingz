@@ -3,7 +3,19 @@
     "name": "dingz",
     "version": "0.5.0",
     "news": {
-      "0.4.0":{
+      "0.5.0": {
+        "en": "added dimmer controller",
+        "de": "Dimmerregler hinzugefügt",
+        "ru": "добавлен диммер",
+        "pt": "controlador dimmer adicionado",
+        "nl": "toegevoegde dimmercontroller",
+        "fr": "contrôleur de gradateur ajouté",
+        "it": "aggiunto controller dimmer",
+        "es": "controlador de atenuador agregado",
+        "pl": "dodano sterownik ściemniacza",
+        "zh-cn": "增加了调光器控制器"
+      },
+      "0.4.0": {
         "en": "added brightness indicator",
         "de": "Helligkeitsanzeige hinzugefügt",
         "ru": "добавлен индикатор яркости",

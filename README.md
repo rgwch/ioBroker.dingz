@@ -15,6 +15,8 @@ With this adapter, Dingz can control anything in the ioBroker ecosystem.
 Note: This version supports a limited subset of Dingz features:
 - act on single/double/long press of any of the buttons
 - read thermometer value
+- read PIR brightness
+- read and set dimmer values
 
 ## Hardware installation
 
@@ -72,17 +74,36 @@ In the lower part you can define, which of the 4 Buttons should be controlled by
 
 ## Use
 
-The Dingz adapter No. X (starting with 0) will create ioBroker states for every button Y it controls:
+Dingz devices have quite a few options. Each of the four switch areas can be wired to a physical light (or other electricity consumer), or can act as a virtual switch sending commands to other smart devices or home atomation systems. If wired, the switch can be a dimmer or a regulator for a sun blind motor. This adapter uses only the first option. If it's a dimmer, the switch can turn its light on or off, or any percentage (value) in between, and it can go there with a certain speed, the "ramp". If it's not wired, Then it works much like a button in a user UI and can act on single click, double click and long press.
+
+Additionally, it measures brightness and temperature
+
+
+The Dingz adapter No. X (starting with 0) will create ioBroker states for every button Y (from 1 to 4) it controls:
 
 * dingz.X.buttons.Y.single 
 * dingz.X.buttons.Y.double
 * dingz.X.buttons.Y.long
 
-And for the temperature:
+for the temperature:
 
 * dingz.X.temperature
 
-Detailed informations on the Dingz and its connection state are found in dingz.X.info
+for the PIR:
+
+* dingz.X.pir.intensity
+* dingz.X.pir.phase  (day, night, twilight)
+
+for every dimmer Y (from 0 to 3):
+
+* dingz.X.dimmer.Y.on 
+* dingz.X.dimmer.Y.value
+* dingz.X.dimmer.Y.ramp
+* dingz.X.dimmer.Y.disabled
+
+Note: If you want to change value and ramp, change ramp first.
+
+Some informations on the Dingz and its connection state are found in dingz.X.info
 
 Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button (direct press or via app/web control). Example:
 
@@ -117,6 +138,10 @@ on({id: b4+"long"},()=>{
 
 
 ## Changelog
+
+### 0.5.0
+
+* (rgwch) added dimmers
 
 ### 0.4.0
 

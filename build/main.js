@@ -21,6 +21,7 @@ const node_fetch_1 = require("node-fetch");
 const udp_1 = require("./udp");
 const pir_1 = require("./pir");
 const buttons_1 = require("./buttons");
+const dimmers_1 = require("./dimmers");
 // That's the only supported API as of now, AFAIK
 exports.API = "/api/v1/";
 class Dingz extends utils.Adapter {
@@ -29,6 +30,7 @@ class Dingz extends utils.Adapter {
         this.interval = 30;
         this.buttons = new buttons_1.Buttons(this);
         this.pir = new pir_1.PIR(this);
+        this.dimmers = new dimmers_1.Dimmers(this);
         this.on("ready", this.onReady.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
@@ -58,7 +60,7 @@ class Dingz extends utils.Adapter {
             // Reset the connection indicator during startup. We'll set to true later, if we can connect
             this.setState("info.connection", false, true);
             // don't accept too short polling intervals
-            this.interval = Math.max((this.config.interval || 60), 60);
+            this.interval = Math.max((this.config.interval || 30), 30);
             this.log.debug("Polling Interval: " + this.interval);
             // fetch informations about our dingz. If successful, set info.connection to true (making the indicator "green")
             const di = yield this.doFetch("device");
@@ -72,13 +74,12 @@ class Dingz extends utils.Adapter {
                 this.setState("info.deviceInfo.details", di[mac], true);
                 this.log.info("Dingz Info: " + JSON.stringify(di[mac]));
                 this.setState("info.connection", true, true);
-                // we're connected. So Set up State Objects
+                // we're connected. So set up State Objects
                 yield this.createObjects();
-                this.doFetch("temp").then(temp => {
-                    this.setStateAsync("temperature", temp.temperature, true);
-                });
-                this.subscribeStates("*.press_release");
-                // Read temperature regularly and set state accordingly
+                this.subscribeStates(this.namespace + ".dimmers.*");
+                // initial read
+                this.fetchValues();
+                // Read temperature, PIR and dimmers regularly and set states accordingly
                 this.timer = setInterval(() => {
                     this.fetchValues;
                 }, this.interval * 1000);
@@ -90,12 +91,13 @@ class Dingz extends utils.Adapter {
             this.setStateAsync("temperature", temp.temperature, true);
         });
         this.doFetch("light").then((pir) => {
-            this.setStateAsync("pir.intensity", pir.intensity);
-            this.setStateAsync("pir.phase", pir.state);
-            this.setStateAsync("pir.adc0", pir.raw.adc0);
-            this.setStateAsync("pir.adc1", pir.raw.adc1);
+            this.setStateAsync("pir.intensity", pir.intensity, true);
+            this.setStateAsync("pir.phase", pir.state, true);
+            this.setStateAsync("pir.adc0", pir.raw.adc0, true);
+            this.setStateAsync("pir.adc1", pir.raw.adc1, true);
         });
         this.doFetch("dimmer").then((res) => {
+            this.dimmers.setDimmerStates(res);
         });
     }
     /**
@@ -121,24 +123,14 @@ class Dingz extends utils.Adapter {
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
             if (!state.ack) {
                 // change came from UI or program
-                /* Todo: Doc how simulate button press
-                const offs = "dingz.0.buttons.".length
-                const subid = id.substr(offs).replace(/\./g, "/")
-                const url = this.config.url + API + "action/btn" + subid
-                this.log.info("POSTing " + url)
-                const headers={
-                  "Content-Type":"application/x-www-form-urlencoded",
+                const subid = id.substr(this.namespace.length + 1);
+                if (subid.startsWith("dimmer")) {
+                    this.log.info("dimmer changed");
+                    this.dimmers.sendDimmerState(subid, state);
                 }
-                const enc=new URLSearchParams()
-                enc.append("value","true")
-                fetch(url, { method: "POST", headers:headers, body: enc, redirect: "follow" }).then(posted => {
-                  if (posted.status !== 200) {
-                    this.log.error("Error POSTing state " + posted.status + ", " + posted.statusText)
-                  }
-                }).catch(err => {
-                  this.log.error("Exeption while POSTing: " + err)
-                })
-                */
+            }
+            else {
+                // change came from the device
             }
         }
         else {
@@ -190,6 +182,7 @@ class Dingz extends utils.Adapter {
             });
             yield this.buttons.createButtonObjects();
             yield this.pir.createPIRObjects();
+            yield this.dimmers.createDimmerObjects();
         });
     }
     doFetch(addr) {
@@ -204,13 +197,13 @@ class Dingz extends utils.Adapter {
                     return result;
                 }
                 else {
-                    this.log.error("Error while fetching " + addr + ": " + response.status);
-                    this.setState("info.connection", false, true);
+                    this.log.error("Error while fetching " + url + addr + ": " + response.status);
+                    // this.setState("info.connection", false, true);
                     return {};
                 }
             }
             catch (err) {
-                this.log.error("Fatal error during fetch");
+                this.log.error("Fatal error during fetch " + url + addr + "; " + err);
                 this.setState("info.connection", false, true);
                 return undefined;
             }
