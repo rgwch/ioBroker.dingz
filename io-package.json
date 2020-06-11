@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "news": {
       "0.5.0": {
         "en": "added dimmer controller",
@@ -163,7 +163,8 @@
     "trackbtn1": false,
     "trackbtn2": false,
     "trackbtn3": false,
-    "trackbtn4": false
+    "trackbtn4": false,
+    "trackpir": false
   },
   "objects": [],
   "instanceObjects": [

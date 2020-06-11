@@ -104,16 +104,16 @@ systemDictionary = {
 
   },
   "polling interval": {
-    "en": "polling interval (temperature)",
-    "de": "Abfrageintervall (Temperatur)",
-    "ru": "интервал опроса (температура)",
-    "pt": "intervalo de pesquisa (temperatura)",
-    "nl": "polling interval (temperatuur)",
-    "fr": "intervalle d'interrogation (température)",
-    "it": "intervallo di polling (temperatura)",
-    "es": "intervalo de sondeo (temperatura)",
-    "pl": "interwał odpytywania (temperatura)",
-    "zh-cn": "轮询间隔（温度）"
+    "en": "polling interval (temperature and brightness)",
+    "de": "Abfrageintervall (Temperatur und Helligkeit)",
+    "ru": "интервал опроса (температура и яркость)",
+    "pt": "intervalo de pesquisa (temperatura e brilho)",
+    "nl": "polling-interval (temperatuur en helderheid)",
+    "fr": "intervalle d'interrogation (température et luminosité)",
+    "it": "intervallo di polling (temperatura e luminosità)",
+    "es": "intervalo de sondeo (temperatura y brillo)",
+    "pl": "interwał odpytywania (temperatura i jasność)",
+    "zh-cn": "轮询间隔（温度和亮度"
   }
 
 };

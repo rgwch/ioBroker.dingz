@@ -1,4 +1,4 @@
-import { Dingz } from "./main"
+import { Dingz, PirState } from "./main"
 
 export class PIR {
 
@@ -6,16 +6,16 @@ export class PIR {
 
   }
   public async createPIRObjects(): Promise<void> {
-    await this.d.setObjectAsync("pir", {
+    await this.d.setObjectAsync("brightness", {
       type: "channel",
       common: {
-        name: "PIR",
+        name: "brightness",
         role: "state"
       },
       native: {}
     })
 
-    await this.d.setObjectAsync("pir.intensity", {
+    await this.d.setObjectAsync("brightness.intensity", {
       type: "state",
       common: {
         name: "intensity",
@@ -27,7 +27,7 @@ export class PIR {
       native: {}
     })
 
-    await this.d.setObjectAsync("pir.phase", {
+    await this.d.setObjectAsync("brightness.phase", {
       type: "state",
       common: {
         name: "phase",
@@ -39,7 +39,7 @@ export class PIR {
       native: {}
     })
 
-    await this.d.setObjectAsync("pir.adc0", {
+    await this.d.setObjectAsync("brightness.adc0", {
       type: "state",
       common: {
         name: "adc0",
@@ -50,7 +50,7 @@ export class PIR {
       },
       native: {}
     })
-    await this.d.setObjectAsync("pir.adc1", {
+    await this.d.setObjectAsync("brightness.adc1", {
       type: "state",
       common: {
         name: "adc1",
@@ -61,6 +61,14 @@ export class PIR {
       },
       native: {}
     })
+
+  }
+
+  public async setPirState(p: PirState): Promise<void> {
+    this.d.setStateAsync("brightness.intensity", p.intensity, true)
+    this.d.setStateAsync("brightness.phase", p.state, true)
+    this.d.setStateAsync("brightness.adc0", p.raw.adc0, true)
+    this.d.setStateAsync("brightness.adc1", p.raw.adc1, true)
 
   }
 }

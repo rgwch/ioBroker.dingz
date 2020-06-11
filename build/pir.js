@@ -15,15 +15,15 @@ class PIR {
     }
     createPIRObjects() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.d.setObjectAsync("pir", {
+            yield this.d.setObjectAsync("brightness", {
                 type: "channel",
                 common: {
-                    name: "PIR",
+                    name: "brightness",
                     role: "state"
                 },
                 native: {}
             });
-            yield this.d.setObjectAsync("pir.intensity", {
+            yield this.d.setObjectAsync("brightness.intensity", {
                 type: "state",
                 common: {
                     name: "intensity",
@@ -34,7 +34,7 @@ class PIR {
                 },
                 native: {}
             });
-            yield this.d.setObjectAsync("pir.phase", {
+            yield this.d.setObjectAsync("brightness.phase", {
                 type: "state",
                 common: {
                     name: "phase",
@@ -45,7 +45,7 @@ class PIR {
                 },
                 native: {}
             });
-            yield this.d.setObjectAsync("pir.adc0", {
+            yield this.d.setObjectAsync("brightness.adc0", {
                 type: "state",
                 common: {
                     name: "adc0",
@@ -56,7 +56,7 @@ class PIR {
                 },
                 native: {}
             });
-            yield this.d.setObjectAsync("pir.adc1", {
+            yield this.d.setObjectAsync("brightness.adc1", {
                 type: "state",
                 common: {
                     name: "adc1",
@@ -67,6 +67,14 @@ class PIR {
                 },
                 native: {}
             });
+        });
+    }
+    setPirState(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.d.setStateAsync("brightness.intensity", p.intensity, true);
+            this.d.setStateAsync("brightness.phase", p.state, true);
+            this.d.setStateAsync("brightness.adc0", p.raw.adc0, true);
+            this.d.setStateAsync("brightness.adc1", p.raw.adc1, true);
         });
     }
 }

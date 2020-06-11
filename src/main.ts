@@ -11,7 +11,7 @@ import fetch from "node-fetch"
 import * as _ from "lodash"
 import { UDP } from "./udp"
 import { PIR } from "./pir"
-import { Buttons } from "./buttons"
+import { Actions } from "./actions"
 import { Dimmers } from "./dimmers"
 
 /*
@@ -44,7 +44,7 @@ type DeviceInfo = {
   hash: string;
 }
 
-type ButtonState = {
+type ActionState = {
   generic: string;
   single: string;
   double: string;
@@ -70,7 +70,7 @@ export type DimmersState = {
   "3": DimmerState;
 }
 
-type PirState = {
+export type PirState = {
   success: boolean;
   intensity: number;
   state: string;
@@ -80,13 +80,13 @@ type PirState = {
   };
 }
 
-type ActionState = {
-  generic: ButtonState;
-  btn1: ButtonState;
-  btn2: ButtonState;
-  btn3: ButtonState;
-  btn4: ButtonState;
-  pir: ButtonState;
+type ActionsState = {
+  generic: ActionState;
+  btn1: ActionState;
+  btn2: ActionState;
+  btn3: ActionState;
+  btn4: ActionState;
+  pir: ActionState;
 }
 
 type PuckVersion = {
@@ -114,6 +114,7 @@ declare global {
       trackbtn2: boolean;
       trackbtn3: boolean;
       trackbtn4: boolean;
+      trackpir: boolean;
 
     }
   }
@@ -122,7 +123,7 @@ declare global {
 export class Dingz extends utils.Adapter {
   private interval = 30
   private timer: any
-  private buttons = new Buttons(this)
+  private actions = new Actions(this)
   private pir = new PIR(this)
   private dimmers = new Dimmers(this)
 
@@ -197,11 +198,8 @@ export class Dingz extends utils.Adapter {
     this.doFetch("temp").then(temp => {
       this.setStateAsync("temperature", temp.temperature, true)
     })
-    this.doFetch("light").then((pir: PirState) => {
-      this.setStateAsync("pir.intensity", pir.intensity, true)
-      this.setStateAsync("pir.phase", pir.state, true)
-      this.setStateAsync("pir.adc0", pir.raw.adc0, true)
-      this.setStateAsync("pir.adc1", pir.raw.adc1, true)
+    this.doFetch("light").then((pirState: PirState) => {
+      this.pir.setPirState(pirState)
     })
 
     this.doFetch("dimmer").then((res: DimmersState) => {
@@ -259,19 +257,20 @@ export class Dingz extends utils.Adapter {
    *      connected: boolean
    *      deviceInfo: DeviceInfo
    *   },
-   *  buttons:{
-   *      btn1: ButtonState,
-   *      btn2: ButtonState,
-   *      btn3: ButtonState,
-   *      btn4: ButtonState
+   *  actions:{
+   *      btn1: ActionState,
+   *      btn2: ActionState,
+   *      btn3: ActionState,
+   *      btn4: ActionState,
+   *      pir: ActionState
    *      
    *    },
    *   temperature: string,
-   *   pir: {
+   *   brightness: {
    *      intensity: number,
    *      phase: day|night|twilight,
    *      adc0: number,
-   *      adc1: number
+   *      adc1: number,
    *   }
    *    dimmers:{
    *      dim0: DimmerState,
@@ -295,7 +294,7 @@ export class Dingz extends utils.Adapter {
       native: {}
 
     })
-    await this.buttons.createButtonObjects()
+    await this.actions.createActionObjects()
     await this.pir.createPIRObjects()
     await this.dimmers.createDimmerObjects()
   }

@@ -20,7 +20,7 @@ const utils = require("@iobroker/adapter-core");
 const node_fetch_1 = require("node-fetch");
 const udp_1 = require("./udp");
 const pir_1 = require("./pir");
-const buttons_1 = require("./buttons");
+const actions_1 = require("./actions");
 const dimmers_1 = require("./dimmers");
 // That's the only supported API as of now, AFAIK
 exports.API = "/api/v1/";
@@ -28,7 +28,7 @@ class Dingz extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "dingz" }));
         this.interval = 30;
-        this.buttons = new buttons_1.Buttons(this);
+        this.actions = new actions_1.Actions(this);
         this.pir = new pir_1.PIR(this);
         this.dimmers = new dimmers_1.Dimmers(this);
         this.on("ready", this.onReady.bind(this));
@@ -90,11 +90,8 @@ class Dingz extends utils.Adapter {
         this.doFetch("temp").then(temp => {
             this.setStateAsync("temperature", temp.temperature, true);
         });
-        this.doFetch("light").then((pir) => {
-            this.setStateAsync("pir.intensity", pir.intensity, true);
-            this.setStateAsync("pir.phase", pir.state, true);
-            this.setStateAsync("pir.adc0", pir.raw.adc0, true);
-            this.setStateAsync("pir.adc1", pir.raw.adc1, true);
+        this.doFetch("light").then((pirState) => {
+            this.pir.setPirState(pirState);
         });
         this.doFetch("dimmer").then((res) => {
             this.dimmers.setDimmerStates(res);
@@ -144,19 +141,20 @@ class Dingz extends utils.Adapter {
      *      connected: boolean
      *      deviceInfo: DeviceInfo
      *   },
-     *  buttons:{
-     *      btn1: ButtonState,
-     *      btn2: ButtonState,
-     *      btn3: ButtonState,
-     *      btn4: ButtonState
+     *  actions:{
+     *      btn1: ActionState,
+     *      btn2: ActionState,
+     *      btn3: ActionState,
+     *      btn4: ActionState,
+     *      pir: ActionState
      *
      *    },
      *   temperature: string,
-     *   pir: {
+     *   brightness: {
      *      intensity: number,
      *      phase: day|night|twilight,
      *      adc0: number,
-     *      adc1: number
+     *      adc1: number,
      *   }
      *    dimmers:{
      *      dim0: DimmerState,
@@ -180,7 +178,7 @@ class Dingz extends utils.Adapter {
                 },
                 native: {}
             });
-            yield this.buttons.createButtonObjects();
+            yield this.actions.createActionObjects();
             yield this.pir.createPIRObjects();
             yield this.dimmers.createDimmerObjects();
         });
