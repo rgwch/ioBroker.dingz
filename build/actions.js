@@ -70,7 +70,7 @@ class Actions {
         });
     }
     programAction(name, action) {
-        const def = `${this.d.config.hostip}/set/dingz.${this.d.instance}.actions.${name}.${action}?value=true`;
+        const def = `${this.d.config.hostip}/set/dingz.${this.d.instance}.actions.${name}.${action}?value=true&ack=true`;
         this.d.log.info("programming " + name + ": " + JSON.stringify(def));
         const url = `${this.d.config.url}${main_1.API}action/${name}/${action}`;
         this.d.log.info("POSTing " + url + "; " + def);

@@ -63,7 +63,8 @@ export class Dimmers {
   }
 
   public async setDimmerState(n: number, s: DimmerState): Promise<void> {
-    await this.d.setStateAsync(`dimmers.${n}.on`, s.on, true)
+    this.d.log.silly("Setting dimmer states for " + n + ", " + JSON.stringify(s))
+    await this.d.setStateAsync(`dimmers.${n.toString()}.on`, s.on, true)
     await this.d.setStateAsync(`dimmers.${n}.value`, s.value, true)
     await this.d.setStateAsync(`dimmers.${n}.ramp`, s.ramp, true)
     await this.d.setStateAsync(`dimmers.${n}.disabled`, s.disabled, true)
@@ -77,7 +78,7 @@ export class Dimmers {
       const num = parts[1]
       const action = parts[2]
       if (action == "on") {
-        await this.d.doFetch(`dimmer/${num}/${state.val ? "on" : "off"}`)
+        await this.doPost(`${num}/${state.val ? "on" : "off"}`)
       } else {
         if (action == "value") {
           const ramp = await this.d.getStateAsync(`dimmers.${num}.ramp`)
@@ -87,20 +88,23 @@ export class Dimmers {
     }
   }
 
-  private async doPost(dimmer: string, value: number, ramp: number): Promise<void> {
-    const url = this.d.config.url + API + "dimmer/" + dimmer + "/on"
+  private async doPost(dimmer: string, value?: number, ramp?: number): Promise<void> {
+    const url = this.d.config.url + API + "dimmer/" + dimmer + (ramp ? "/on" : "")
 
     this.d.log.info(`Posting ${url}; {value: ${value}, ramp: ${ramp}}`)
     try {
-      const encoded = new URLSearchParams()
-      encoded.append("value", value.toString())
-      encoded.append("ramp", ramp.toString())
+      let encoded
+      if (ramp && value) {
+        encoded = new URLSearchParams()
+        encoded.append("value", value.toString())
+        encoded.append("ramp", ramp.toString())
+      }
       const response = await fetch(url, {
         method: "post",
         headers: {
           "Content-type": "x-www-form-urlencoded"
         },
-        body: encoded,
+        body: encoded || "",
         redirect: "follow"
       })
       if (response.status == 200) {

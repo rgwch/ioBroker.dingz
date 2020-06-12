@@ -76,7 +76,11 @@ class Dimmers {
     }
     setDimmerState(n, s) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.d.setStateAsync(`dimmers.${n}.on`, s.on, true);
+            this.d.log.silly("Setting dimmer states for " + n + ", " + JSON.stringify(s));
+            yield this.d.setStateAsync("actions.pir.single", true, true);
+            yield this.d.setStateAsync("actions.pir.double", true, false);
+            yield this.d.setStateAsync("dingz.0.actions.pir.long", true, true);
+            yield this.d.setStateAsync(`dimmers.${n.toString()}.on`, s.on, true);
             yield this.d.setStateAsync(`dimmers.${n}.value`, s.value, true);
             yield this.d.setStateAsync(`dimmers.${n}.ramp`, s.ramp, true);
             yield this.d.setStateAsync(`dimmers.${n}.disabled`, s.disabled, true);
@@ -92,7 +96,7 @@ class Dimmers {
                 const num = parts[1];
                 const action = parts[2];
                 if (action == "on") {
-                    yield this.d.doFetch(`dimmer/${num}/${state.val ? "on" : "off"}`);
+                    yield this.doPost(`${num}/${state.val ? "on" : "off"}`);
                 }
                 else {
                     if (action == "value") {
@@ -105,18 +109,21 @@ class Dimmers {
     }
     doPost(dimmer, value, ramp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = this.d.config.url + main_1.API + "dimmer/" + dimmer + "/on";
+            const url = this.d.config.url + main_1.API + "dimmer/" + dimmer + (ramp ? "/on" : "");
             this.d.log.info(`Posting ${url}; {value: ${value}, ramp: ${ramp}}`);
             try {
-                const encoded = new URLSearchParams();
-                encoded.append("value", value.toString());
-                encoded.append("ramp", ramp.toString());
+                let encoded;
+                if (ramp && value) {
+                    encoded = new URLSearchParams();
+                    encoded.append("value", value.toString());
+                    encoded.append("ramp", ramp.toString());
+                }
                 const response = yield node_fetch_1.default(url, {
                     method: "post",
                     headers: {
                         "Content-type": "x-www-form-urlencoded"
                     },
-                    body: encoded,
+                    body: encoded || "",
                     redirect: "follow"
                 });
                 if (response.status == 200) {

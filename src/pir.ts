@@ -100,14 +100,17 @@ export class PIR {
    */
   public trackMotion(): void {
     // Only if we're not already tracking
-    if (!this.timer) {  
+    if (!this.timer) {
       this.detectMotion().then(motion => {
         if (motion) {
+          this.d.log.info("Begin tracking motion")
           this.timer = setInterval(() => {
             this.detectMotion().then(result => {
               if (!result) {
                 clearInterval(this.timer)
                 this.timer = undefined
+                this.d.setState("actions.pir.generic", false, true)
+                this.d.log.info("ended tracking motion")
               }
             })
           }, 1000)
@@ -116,10 +119,11 @@ export class PIR {
     }
   }
 
-  private async detectMotion(): Promise<boolean> {
+  public async detectMotion(): Promise<boolean> {
     const res: MotionInfo = await this.d.doFetch("motion")
+    this.d.log.info("detecting motion: " + JSON.stringify(res))
     if (res.success) {
-      this.d.setStateAsync("motion", res.motion, true)
+      this.d.setState("motion", res.motion, true)
       return res.motion
     } else {
       this.d.log.error("Can't query motion detector");

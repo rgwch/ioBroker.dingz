@@ -82,18 +82,18 @@ class Dingz extends utils.Adapter {
                     this.setState("info.connection", true, true);
                     // we're connected. So set up State Objects
                     yield this.createObjects();
-                    this.subscribeStates(this.namespace + ".dimmers.*");
+                    this.subscribeStates("*");
                     // initial read
                     this.fetchValues();
+                    this.pir.trackMotion();
                     // Read temperature, PIR and dimmers regularly and set states accordingly
-                    this.timer = setInterval(() => {
-                        this.fetchValues;
-                    }, this.interval * 1000);
+                    this.timer = setInterval(this.fetchValues.bind(this), this.interval * 1000);
                 }
             }
         });
     }
     fetchValues() {
+        this.log.silly("fetching values");
         this.doFetch("temp").then(temp => {
             this.setStateAsync("temperature", temp.temperature, true);
         });
@@ -125,7 +125,7 @@ class Dingz extends utils.Adapter {
      */
     onStateChange(id, state) {
         if (state) {
-            this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
             if (!state.ack) {
                 // change came from UI or program
                 const subid = id.substr(this.namespace.length + 1);

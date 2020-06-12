@@ -103,24 +103,31 @@ class PIR {
      * Track he motion detector until it's negative.
      */
     trackMotion() {
-        this.detectMotion().then(motion => {
-            if (motion) {
-                this.timer = setInterval(() => {
-                    this.detectMotion().then(result => {
-                        if (!result) {
-                            clearInterval(this.timer);
-                            this.timer = undefined;
-                        }
-                    });
-                }, 1000);
-            }
-        });
+        // Only if we're not already tracking
+        if (!this.timer) {
+            this.detectMotion().then(motion => {
+                if (motion) {
+                    this.d.log.info("Begin tracking motion");
+                    this.timer = setInterval(() => {
+                        this.detectMotion().then(result => {
+                            if (!result) {
+                                clearInterval(this.timer);
+                                this.timer = undefined;
+                                this.d.setState("actions.pir.generic", false, true);
+                                this.d.log.info("ended tracking motion");
+                            }
+                        });
+                    }, 1000);
+                }
+            });
+        }
     }
     detectMotion() {
         return __awaiter(this, void 0, void 0, function* () {
             const res = yield this.d.doFetch("motion");
+            this.d.log.info("detecting motion: " + JSON.stringify(res));
             if (res.success) {
-                this.d.setStateAsync("motion", res.motion, true);
+                this.d.setState("motion", res.motion, true);
                 return res.motion;
             }
             else {
