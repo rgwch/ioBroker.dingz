@@ -71,18 +71,25 @@ class Dingz extends utils.Adapter {
                 const keys = Object.keys(di);
                 const mac = keys[0];
                 this.setState("info.deviceInfo.mac", mac, true);
-                this.setState("info.deviceInfo.details", di[mac], true);
-                this.log.info("Dingz Info: " + JSON.stringify(di[mac]));
-                this.setState("info.connection", true, true);
-                // we're connected. So set up State Objects
-                yield this.createObjects();
-                this.subscribeStates(this.namespace + ".dimmers.*");
-                // initial read
-                this.fetchValues();
-                // Read temperature, PIR and dimmers regularly and set states accordingly
-                this.timer = setInterval(() => {
-                    this.fetchValues;
-                }, this.interval * 1000);
+                if (!di[mac] || !di[mac].type || di[mac].type != "dingz") {
+                    this.log.error("The device at this address is not recognized! Is it really a Dingz?");
+                }
+                else {
+                    this.setState("info.deviceInfo.front_sn", di[mac].front_sn);
+                    this.setState("info.deviceInfo.puck_sn", di[mac].puck_sn);
+                    this.setState("info.deviceInfo.details", JSON.stringify(di[mac]), true);
+                    this.log.info("Dingz Info: " + JSON.stringify(di[mac]));
+                    this.setState("info.connection", true, true);
+                    // we're connected. So set up State Objects
+                    yield this.createObjects();
+                    this.subscribeStates(this.namespace + ".dimmers.*");
+                    // initial read
+                    this.fetchValues();
+                    // Read temperature, PIR and dimmers regularly and set states accordingly
+                    this.timer = setInterval(() => {
+                        this.fetchValues;
+                    }, this.interval * 1000);
+                }
             }
         });
     }
@@ -98,13 +105,14 @@ class Dingz extends utils.Adapter {
         });
     }
     /**
-     * Adapter shuts down - clear Timer
+     * Adapter shuts down - clear Timers
      */
     onUnload(callback) {
         try {
             if (this.timer) {
                 clearInterval(this.timer);
             }
+            this.pir.stop();
             this.log.info("cleaned everything up...");
             callback();
         }
@@ -127,7 +135,11 @@ class Dingz extends utils.Adapter {
                 }
             }
             else {
-                // change came from the device
+                // change came from the device. If it was the PIR, track it until no more motion is detected
+                if (id.endsWith("pir.generic")) {
+                    this.log.info("tracking motion");
+                    this.pir.trackMotion();
+                }
             }
         }
         else {
@@ -150,6 +162,7 @@ class Dingz extends utils.Adapter {
      *
      *    },
      *   temperature: string,
+     *   motion: boolean,
      *   brightness: {
      *      intensity: number,
      *      phase: day|night|twilight,
@@ -183,6 +196,11 @@ class Dingz extends utils.Adapter {
             yield this.dimmers.createDimmerObjects();
         });
     }
+    /**
+     * Query the Dingz
+     * @param addr address part after http://address/api/v1/
+     * @returns the Answer from the Dingz as JSON, if the call was successful. Empty Object if HTTP Status was != 200. Undefined on error.
+     */
     doFetch(addr) {
         return __awaiter(this, void 0, void 0, function* () {
             const url = this.config.url + exports.API;
@@ -209,6 +227,9 @@ class Dingz extends utils.Adapter {
     }
 }
 exports.Dingz = Dingz;
+/**
+ * ioBroker boilerplate code
+ */
 if (module.parent) {
     // Export the constructor in compact mode
     module.exports = (options) => new Dingz(options);

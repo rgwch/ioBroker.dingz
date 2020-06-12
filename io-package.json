@@ -210,6 +210,30 @@
       "native": {}
     },
     {
+      "_id": "info.deviceInfo.front_sn",
+      "type": "state",
+      "common": {
+        "role": "state",
+        "name": "Serial# front",
+        "type": "string",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.deviceInfo.puck_sn",
+      "type": "state",
+      "common": {
+        "role": "state",
+        "name": "Serial# puck",
+        "type": "string",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
       "_id": "info.deviceInfo.details",
       "type": "state",
       "common": {

@@ -13,92 +13,8 @@ import { UDP } from "./udp"
 import { PIR } from "./pir"
 import { Actions } from "./actions"
 import { Dimmers } from "./dimmers"
+import { DeviceInfo, PirState, DimmersState } from "./dingz-types"
 
-/*
- *  Declare answers we might get from the dingz
- */
-
-type DeviceInfo = {
-  type: string;
-  battery: boolean;
-  reachable: boolean;
-  meshroot: boolean;
-  fw_version: string;
-  hw_version: string;
-  fw_version_puck: string;
-  bl_version_puck: string;
-  hw_version_puck: string;
-  hw_id_puck: string;
-  puck_sn: string;
-  puck_production_date: {
-    year: number;
-    month: number;
-    day: number;
-  };
-  puck_hw_model: string;
-  front_hw_model: string;
-  front_production_date: string;
-  front_sn: string;
-  dip_config: number;
-  has_pir: boolean;
-  hash: string;
-}
-
-type ActionState = {
-  generic: string;
-  single: string;
-  double: string;
-  long: string;
-  press_release: boolean;
-}
-
-export type DimmerState = {
-  on: boolean;
-  value: number;
-  ramp: number;
-  disabled: boolean;
-  index: {
-    relative: number;
-    absolute: number;
-  };
-}
-
-export type DimmersState = {
-  "0": DimmerState;
-  "1": DimmerState;
-  "2": DimmerState;
-  "3": DimmerState;
-}
-
-export type PirState = {
-  success: boolean;
-  intensity: number;
-  state: string;
-  raw: {
-    adc0: number;
-    adc1: number;
-  };
-}
-
-type ActionsState = {
-  generic: ActionState;
-  btn1: ActionState;
-  btn2: ActionState;
-  btn3: ActionState;
-  btn4: ActionState;
-  pir: ActionState;
-}
-
-type PuckVersion = {
-  fw: {
-    success: boolean;
-    version: string;
-  };
-  hw: {
-    success: boolean;
-    version: string;
-  };
-}
 
 // That's the only supported API as of now, AFAIK
 export const API = "/api/v1/"
@@ -169,27 +85,33 @@ export class Dingz extends utils.Adapter {
 
 
     // fetch informations about our dingz. If successful, set info.connection to true (making the indicator "green")
-    const di = await this.doFetch("device")
+    const di: DeviceInfo = await this.doFetch("device")
     if (!di) {
       this.log.error("Could not connect to device.")
     } else {
       const keys = Object.keys(di)
       const mac = keys[0]
       this.setState("info.deviceInfo.mac", mac, true)
-      this.setState("info.deviceInfo.details", di[mac], true)
-      this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
-      this.setState("info.connection", true, true);
-      // we're connected. So set up State Objects
-      await this.createObjects()
+      if (!di[mac] || !di[mac].type || di[mac].type != "dingz") {
+        this.log.error("The device at this address is not recognized! Is it really a Dingz?")
+      } else {
+        this.setState("info.deviceInfo.front_sn", di[mac].front_sn)
+        this.setState("info.deviceInfo.puck_sn", di[mac].puck_sn)
+        this.setState("info.deviceInfo.details", JSON.stringify(di[mac]), true)
+        this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
+        this.setState("info.connection", true, true);
+        // we're connected. So set up State Objects
+        await this.createObjects()
 
-      this.subscribeStates(this.namespace + ".dimmers.*");
+        this.subscribeStates(this.namespace + ".dimmers.*");
 
-      // initial read
-      this.fetchValues()
-      // Read temperature, PIR and dimmers regularly and set states accordingly
-      this.timer = setInterval(() => {
-        this.fetchValues
-      }, this.interval * 1000)
+        // initial read
+        this.fetchValues()
+        // Read temperature, PIR and dimmers regularly and set states accordingly
+        this.timer = setInterval(() => {
+          this.fetchValues
+        }, this.interval * 1000)
+      }
     }
 
   }
@@ -209,13 +131,14 @@ export class Dingz extends utils.Adapter {
   }
 
   /**
-   * Adapter shuts down - clear Timer
+   * Adapter shuts down - clear Timers
    */
   private onUnload(callback: () => void): void {
     try {
       if (this.timer) {
         clearInterval(this.timer)
       }
+      this.pir.stop()
       this.log.info("cleaned everything up...");
       callback();
     } catch (e) {
@@ -240,8 +163,11 @@ export class Dingz extends utils.Adapter {
         }
 
       } else {
-        // change came from the device
-
+        // change came from the device. If it was the PIR, track it until no more motion is detected
+        if (id.endsWith("pir.generic")) {
+          this.log.info("tracking motion")
+          this.pir.trackMotion()
+        }
       }
     } else {
       this.log.info(`state ${id} deleted`);
@@ -266,6 +192,7 @@ export class Dingz extends utils.Adapter {
    *      
    *    },
    *   temperature: string,
+   *   motion: boolean,
    *   brightness: {
    *      intensity: number,
    *      phase: day|night|twilight,
@@ -301,6 +228,11 @@ export class Dingz extends utils.Adapter {
 
 
 
+  /**
+   * Query the Dingz
+   * @param addr address part after http://address/api/v1/
+   * @returns the Answer from the Dingz as JSON, if the call was successful. Empty Object if HTTP Status was != 200. Undefined on error.
+   */
   public async doFetch(addr: string): Promise<any> {
     const url = this.config.url + API
 
@@ -324,27 +256,11 @@ export class Dingz extends utils.Adapter {
     }
   }
 
-
-
-
-  // /**
-  //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-  //  * Using this method requires "common.message" property to be set to true in io-package.json
-  //  */
-  // private onMessage(obj: ioBroker.Message): void {
-  // 	if (typeof obj === "object" && obj.message) {
-  // 		if (obj.command === "send") {
-  // 			// e.g. send email or pushover or whatever
-  // 			this.log.info("send command");
-
-  // 			// Send response in callback if required
-  // 			if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-  // 		}
-  // 	}
-  // }
-
 }
 
+/**
+ * ioBroker boilerplate code
+ */
 if (module.parent) {
   // Export the constructor in compact mode
   module.exports = (options: Partial<utils.AdapterOptions> | undefined) => new Dingz(options);

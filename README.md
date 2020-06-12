@@ -79,20 +79,24 @@ Dingz devices have quite a few options. Each of the four switch areas can be wir
 Additionally, it measures brightness and temperature
 
 
-The Dingz adapter No. X (starting with 0) will create ioBroker states for every button Y (from 1 to 4) it controls:
+The Dingz adapter No. X (starting with 0) will create ioBroker states for every button Y (from btn1 to btn4) it controls:
 
-* dingz.X.buttons.Y.single 
-* dingz.X.buttons.Y.double
-* dingz.X.buttons.Y.long
+* dingz.X.actions.Y.single 
+* dingz.X.actions.Y.double
+* dingz.X.actions.Y.long
+
+And for the PIR motion detector:
+
+* dingz.X.actions.pir.single
 
 for the temperature:
 
 * dingz.X.temperature
 
-for the PIR:
+for the brightness:
 
-* dingz.X.pir.intensity
-* dingz.X.pir.phase  (day, night, twilight)
+* dingz.X.brightness.intensity
+* dingz.X.brightness.phase  (day, night, twilight)
 
 for every dimmer Y (from 0 to 3):
 
@@ -108,8 +112,11 @@ Some informations on the Dingz and its connection state are found in dingz.X.inf
 Use the states in ioBroker Scripting or VIS UI design to react on user interactions with a controlled button (direct press or via app/web control). Example:
 
 ```javascript
-const b4="dingz.0.buttons.4.";
+const b4="dingz.0.actions.4.";
+const motion="dingz.0.actions.pir.single";
+const light="dingz.0.brightness.phase";
 const aussenlicht="lightify.0.aussenlicht.on";
+const spotlight="shelly.00eddfr.bulb"
 
 on({id:b4+"single"},()=>{
     log("Button 4 single press received","info")
@@ -120,6 +127,15 @@ on({id:b4+"single"},()=>{
     },180000)
 })
 
+on({id:motion},()=>{
+  if(getState(light).val == 'night'){
+    // Spotlight for 2 seconds 
+    setState(spotlight,true)
+    setTimeout(()=>{
+      setState(spotlight,false)
+    },2000)
+  }
+})
 on({id:b4+"double"},()=>{
     log("Button 4 double press received","info")
 })
@@ -138,6 +154,11 @@ on({id: b4+"long"},()=>{
 
 
 ## Changelog
+
+### 0.6.0
+* (rgwch) added PIR motion detector. 
+
+Note: This version includes some breaking changes: The former 'button' states have been renamed to 'action' states and include PIR actions. It is recommended to delete all dingz.* objects before updating to the new version.
 
 ### 0.5.0
 

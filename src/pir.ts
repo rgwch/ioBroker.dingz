@@ -1,11 +1,34 @@
-import { Dingz, PirState } from "./main"
+/**
+ * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ * Copyright (c) 2020 by G. Weirich
+ * License: See LICENSE
+ */
+
+import { Dingz } from "./main"
+import { PirState, MotionInfo } from "./dingz-types"
 
 export class PIR {
+  private timer: any = undefined
 
-  constructor(private d: Dingz) {
+  constructor(private d: Dingz) { }
 
+  public stop(): void {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   }
   public async createPIRObjects(): Promise<void> {
+    await this.d.setObjectAsync("motion", {
+      type: "state",
+      common: {
+        name: "motion",
+        type: "boolean",
+        role: "indicator",
+        read: true,
+        write: false
+      },
+      native: {}
+    })
     await this.d.setObjectAsync("brightness", {
       type: "channel",
       common: {
@@ -70,5 +93,34 @@ export class PIR {
     this.d.setStateAsync("brightness.adc0", p.raw.adc0, true)
     this.d.setStateAsync("brightness.adc1", p.raw.adc1, true)
 
+  }
+
+  /**
+   * Track he motion detector until it's negative.
+   */
+  public trackMotion(): void {
+    this.detectMotion().then(motion => {
+      if (motion) {
+        this.timer = setInterval(() => {
+          this.detectMotion().then(result => {
+            if (!result) {
+              clearInterval(this.timer)
+              this.timer = undefined
+            }
+          })
+        }, 1000)
+      }
+    })
+  }
+
+  private async detectMotion(): Promise<boolean> {
+    const res: MotionInfo = await this.d.doFetch("motion")
+    if (res.success) {
+      this.d.setStateAsync("motion", res.motion, true)
+      return res.motion
+    } else {
+      this.d.log.error("Can't query motion detector");
+      return false
+    }
   }
 }

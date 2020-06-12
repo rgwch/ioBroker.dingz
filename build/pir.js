@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ * Copyright (c) 2020 by G. Weirich
+ * License: See LICENSE
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,9 +17,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class PIR {
     constructor(d) {
         this.d = d;
+        this.timer = undefined;
+    }
+    stop() {
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
     }
     createPIRObjects() {
         return __awaiter(this, void 0, void 0, function* () {
+            yield this.d.setObjectAsync("motion", {
+                type: "state",
+                common: {
+                    name: "motion",
+                    type: "boolean",
+                    role: "indicator",
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
             yield this.d.setObjectAsync("brightness", {
                 type: "channel",
                 common: {
@@ -75,6 +97,36 @@ class PIR {
             this.d.setStateAsync("brightness.phase", p.state, true);
             this.d.setStateAsync("brightness.adc0", p.raw.adc0, true);
             this.d.setStateAsync("brightness.adc1", p.raw.adc1, true);
+        });
+    }
+    /**
+     * Track he motion detector until it's negative.
+     */
+    trackMotion() {
+        this.detectMotion().then(motion => {
+            if (motion) {
+                this.timer = setInterval(() => {
+                    this.detectMotion().then(result => {
+                        if (!result) {
+                            clearInterval(this.timer);
+                            this.timer = undefined;
+                        }
+                    });
+                }, 1000);
+            }
+        });
+    }
+    detectMotion() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const res = yield this.d.doFetch("motion");
+            if (res.success) {
+                this.d.setStateAsync("motion", res.motion, true);
+                return res.motion;
+            }
+            else {
+                this.d.log.error("Can't query motion detector");
+                return false;
+            }
         });
     }
 }

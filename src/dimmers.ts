@@ -1,4 +1,11 @@
-import { Dingz, API, DimmersState, DimmerState } from "./main"
+/**
+ * ioBroker.dingz: Connect Dingz (http://www.dingz.ch) with ioBroker
+ * Copyright (c) 2020 by G. Weirich
+ * License: See LICENSE
+ */
+
+import { Dingz, API } from "./main"
+import { DimmersState, DimmerState } from "./dingz-types"
 import fetch from "node-fetch"
 
 
