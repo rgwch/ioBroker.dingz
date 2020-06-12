@@ -99,18 +99,21 @@ export class PIR {
    * Track he motion detector until it's negative.
    */
   public trackMotion(): void {
-    this.detectMotion().then(motion => {
-      if (motion) {
-        this.timer = setInterval(() => {
-          this.detectMotion().then(result => {
-            if (!result) {
-              clearInterval(this.timer)
-              this.timer = undefined
-            }
-          })
-        }, 1000)
-      }
-    })
+    // Only if we're not already tracking
+    if (!this.timer) {  
+      this.detectMotion().then(motion => {
+        if (motion) {
+          this.timer = setInterval(() => {
+            this.detectMotion().then(result => {
+              if (!result) {
+                clearInterval(this.timer)
+                this.timer = undefined
+              }
+            })
+          }, 1000)
+        }
+      })
+    }
   }
 
   private async detectMotion(): Promise<boolean> {
