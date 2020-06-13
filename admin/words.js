@@ -91,17 +91,16 @@ systemDictionary = {
     "zh-cn": "ioBroker主机的IP地址"
   },
   "whichbutton": {
-    "en": "Which of the dingz buttons should ioBroker control?",
-    "de": "Welche Tasten des Dingz soll ioBroker übernehmen?",
-    "ru": "какую из кнопок dingz должен контролировать ioBroker?",
-    "pt": "qual dos botões dingz o ioBroker deve controlar?",
-    "nl": "welke van de dingz-knoppen moet ioBroker bedienen?",
-    "fr": "lequel des boutons dingz doit ioBroker contrôler?",
-    "it": "quale dei pulsanti Dingz dovrebbe controllare ioBroker?",
-    "es": "¿Cuál de los botones dingz debería controlar ioBroker?",
-    "pl": "który z przycisków dingz powinien kontrolować ioBroker?",
-    "zh-cn": "ioBroker应该控制哪个dingz按钮？"
-
+    "en": "which of the Dingz actions should ioBroker control?",
+    "de": "Welche der Dingz-Aktionen soll ioBroker steuern?",
+    "ru": "какое из действий Dingz должно контролировать ioBroker?",
+    "pt": "qual das ações Dingz deve controlar o ioBroker?",
+    "nl": "welke van de Dingz-acties ioBroker moet besturen?",
+    "fr": "laquelle des actions Dingz devrait contrôler ioBroker?",
+    "it": "quale delle azioni di Dingz dovrebbe controllare ioBroker?",
+    "es": "¿cuál de las acciones de Dingz debería controlar ioBroker?",
+    "pl": "która z akcji Dingza powinna kontrolować ioBroker?",
+    "zh-cn": "ioBroker应该控制哪些Dingz动作?"
   },
   "polling interval": {
     "en": "polling interval (temperature and brightness)",

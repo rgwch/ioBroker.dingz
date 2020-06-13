@@ -47,9 +47,11 @@ class Actions {
                 native: {}
             });
             yield this.createActionState(acn, "generic");
-            yield this.createActionState(acn, "single");
-            yield this.createActionState(acn, "double");
-            yield this.createActionState(acn, "long");
+            if (acn != "pir") {
+                yield this.createActionState(acn, "single");
+                yield this.createActionState(acn, "double");
+                yield this.createActionState(acn, "long");
+            }
             // await this.createButtonState(btn, "press_release")
         });
     }

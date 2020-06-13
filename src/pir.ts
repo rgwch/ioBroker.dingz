@@ -121,7 +121,7 @@ export class PIR {
 
   public async detectMotion(): Promise<boolean> {
     const res: MotionInfo = await this.d.doFetch("motion")
-    this.d.log.info("detecting motion: " + JSON.stringify(res))
+    this.d.log.silly("detecting motion: " + JSON.stringify(res))
     if (res.success) {
       this.d.setState("motion", res.motion, true)
       return res.motion

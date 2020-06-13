@@ -77,9 +77,6 @@ class Dimmers {
     setDimmerState(n, s) {
         return __awaiter(this, void 0, void 0, function* () {
             this.d.log.silly("Setting dimmer states for " + n + ", " + JSON.stringify(s));
-            yield this.d.setStateAsync("actions.pir.single", true, true);
-            yield this.d.setStateAsync("actions.pir.double", true, false);
-            yield this.d.setStateAsync("dingz.0.actions.pir.long", true, true);
             yield this.d.setStateAsync(`dimmers.${n.toString()}.on`, s.on, true);
             yield this.d.setStateAsync(`dimmers.${n}.value`, s.value, true);
             yield this.d.setStateAsync(`dimmers.${n}.ramp`, s.ramp, true);

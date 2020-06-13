@@ -125,19 +125,19 @@ class Dingz extends utils.Adapter {
      */
     onStateChange(id, state) {
         if (state) {
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            this.log.silly(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
             if (!state.ack) {
                 // change came from UI or program
                 const subid = id.substr(this.namespace.length + 1);
                 if (subid.startsWith("dimmer")) {
-                    this.log.info("dimmer changed " + id);
+                    this.log.silly("dimmer changed " + id);
                     this.dimmers.sendDimmerState(subid, state);
                 }
             }
             else {
                 // change came from the device. If it was the PIR, track it until no more motion is detected
                 if (id.endsWith("pir.generic")) {
-                    this.log.info("tracking motion");
+                    this.log.silly("tracking motion");
                     this.pir.trackMotion();
                 }
             }

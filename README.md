@@ -17,6 +17,7 @@ Note: This version supports a limited subset of Dingz features:
 - read thermometer value
 - read PIR brightness
 - read and set dimmer values
+- detect motion
 
 ## Hardware installation
 
@@ -68,13 +69,13 @@ The configuration dialog should open after successful creation of the instance.
 
 Enter the IP Address of the Dingz for this instance. You need also to indicate the address of the ioBroker server and the port you've set when configuring the "Simple RESTful" Adapter. By default, that's 8087. The symbolic network name of the ioBroker Server, e.g. `http://homecontrol.local:8087` will probably not work, so better find out the IP address, e.g. in the router's network list (And while you're there, you'll probably want to instruct the DHCP server to always give the same address to the Dingz and to the ioBroker server.)
 
-The righmost field is for the polling interval, i.e. the time span between two requests to the Dingz temperature value in seconds. Note that this is not really the room temperature since the Dingz produces some heat which makes the temperature indicator show too high values.
+The righmost field is for the polling interval, i.e. the time span between two requests to the Dingz values (temperature, light, dimmer states) in seconds.
 
-In the lower part you can define, which of the 4 Buttons should be controlled by ioBroker. The other buttons are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Button can only have one controller. But a button can be physically wired to a light and still act on ioBroker programming. 
+In the lower part you can define, which of the 4 Buttons and the PIR should be controlled by ioBroker. The other actions are left to direct programming of the Dingz via its App or its Web Server. Do not mix direct programming and ioBroker control. A Dingz action can only have one controller. But a button can be physically wired to a light and still act on ioBroker programming. 
 
 ## Use
 
-Dingz devices have quite a few options. Each of the four switch areas can be wired to a physical light (or other electricity consumer), or can act as a virtual switch sending commands to other smart devices or home atomation systems. If wired, the switch can be a dimmer or a regulator for a sun blind motor. This adapter uses only the first option. If it's a dimmer, the switch can turn its light on or off, or any percentage (value) in between, and it can go there with a certain speed, the "ramp". If it's not wired, Then it works much like a button in a user UI and can act on single click, double click and long press.
+Dingz devices have quite a few options. Each of the four switch areas can be wired to a physical light (or other electricity consumer), or can act as a virtual switch (an "action") sending commands to other smart devices or home automation systems. If wired, the switch can be a dimmer or a regulator for a sun blind motor. This adapter uses only the first option. If it's a dimmer, the switch can turn its light on or off, or any percentage (value) in between, and it can go there with a certain speed, the "ramp". If it's not wired, Then it works much like a button in a user UI and can act on single click, double click and long press. The PIR can be directly wired to one of the buttons, or it can be controlled by ioBroker as another "action" which changes a respective ioBroker state when activated.
 
 Additionally, it measures brightness and temperature
 
@@ -87,7 +88,7 @@ The Dingz adapter No. X (starting with 0) will create ioBroker states for every 
 
 And for the PIR motion detector:
 
-* dingz.X.actions.pir.single
+* dingz.X.actions.pir.generic
 
 for the temperature:
 
@@ -113,7 +114,7 @@ Use the states in ioBroker Scripting or VIS UI design to react on user interacti
 
 ```javascript
 const b4="dingz.0.actions.4.";
-const motion="dingz.0.actions.pir.single";
+const motion="dingz.0.actions.pir.generic";
 const light="dingz.0.brightness.phase";
 const aussenlicht="lightify.0.aussenlicht.on";
 const spotlight="shelly.00eddfr.bulb"

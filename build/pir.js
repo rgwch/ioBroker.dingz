@@ -125,7 +125,7 @@ class PIR {
     detectMotion() {
         return __awaiter(this, void 0, void 0, function* () {
             const res = yield this.d.doFetch("motion");
-            this.d.log.info("detecting motion: " + JSON.stringify(res));
+            this.d.log.silly("detecting motion: " + JSON.stringify(res));
             if (res.success) {
                 this.d.setState("motion", res.motion, true);
                 return res.motion;
