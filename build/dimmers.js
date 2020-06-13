@@ -104,13 +104,13 @@ class Dimmers {
             }
         });
     }
-    doPost(dimmer, value, ramp) {
+    doPost(dimmer, value, ramp = 0) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = this.d.config.url + main_1.API + "dimmer/" + dimmer + (ramp ? "/on" : "");
+            const url = this.d.config.url + main_1.API + "dimmer/" + dimmer + ((value != undefined) ? "/on" : "");
             this.d.log.info(`Posting ${url}; {value: ${value}, ramp: ${ramp}}`);
             try {
                 let encoded;
-                if (ramp && value) {
+                if (value != undefined) {
                     encoded = new URLSearchParams();
                     encoded.append("value", value.toString());
                     encoded.append("ramp", ramp.toString());

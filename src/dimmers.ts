@@ -88,13 +88,13 @@ export class Dimmers {
     }
   }
 
-  private async doPost(dimmer: string, value?: number, ramp?: number): Promise<void> {
-    const url = this.d.config.url + API + "dimmer/" + dimmer + (ramp ? "/on" : "")
+  private async doPost(dimmer: string, value?: number, ramp = 0): Promise<void> {
+    const url = this.d.config.url + API + "dimmer/" + dimmer + ((value != undefined) ? "/on" : "")
 
     this.d.log.info(`Posting ${url}; {value: ${value}, ramp: ${ramp}}`)
     try {
       let encoded
-      if (ramp && value) {
+      if (value != undefined) {
         encoded = new URLSearchParams()
         encoded.append("value", value.toString())
         encoded.append("ramp", ramp.toString())
