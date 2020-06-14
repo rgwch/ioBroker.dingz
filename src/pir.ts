@@ -4,8 +4,9 @@
  * License: See LICENSE
  */
 
-import { Dingz } from "./main"
+import { Dingz, API } from "./main"
 import { PirState, MotionInfo } from "./dingz-types"
+import fetch from "node-fetch"
 
 export class PIR {
   private timer: any = undefined
@@ -18,6 +19,14 @@ export class PIR {
     }
   }
   public async createPIRObjects(): Promise<void> {
+    fetch(this.d.config.url + API + "action/pir/press_release/enable", {
+      method: "POST"
+    }).then(response => {
+      if (response.status !== 200) {
+        this.d.log.error("could not enable PIR")
+      }
+    })
+
     await this.d.setObjectAsync("motion", {
       type: "state",
       common: {

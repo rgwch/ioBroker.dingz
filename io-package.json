@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "dingz",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "news": {
+      "0.6.2": {
+        "en": "added motion detector",
+        "de": "Bewegungsmelder hinzugefügt",
+        "ru": "добавлен детектор движения",
+        "pt": "detector de movimento adicionado",
+        "nl": "bewegingsdetector toegevoegd",
+        "fr": "détecteur de mouvement ajouté",
+        "it": "aggiunto rilevatore di movimento",
+        "es": "detector de movimiento agregado",
+        "pl": "dodano czujnik ruchu",
+        "zh-cn": "增加了运动检测器"
+      },
       "0.5.0": {
         "en": "added dimmer controller",
         "de": "Dimmerregler hinzugefügt",

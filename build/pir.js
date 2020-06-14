@@ -14,6 +14,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const main_1 = require("./main");
+const node_fetch_1 = require("node-fetch");
 class PIR {
     constructor(d) {
         this.d = d;
@@ -26,6 +28,13 @@ class PIR {
     }
     createPIRObjects() {
         return __awaiter(this, void 0, void 0, function* () {
+            node_fetch_1.default(this.d.config.url + main_1.API + "action/pir/press_release/enable", {
+                method: "POST"
+            }).then(response => {
+                if (response.status !== 200) {
+                    this.d.log.error("could not enable PIR");
+                }
+            });
             yield this.d.setObjectAsync("motion", {
                 type: "state",
                 common: {
