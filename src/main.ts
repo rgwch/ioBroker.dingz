@@ -165,7 +165,7 @@ export class Dingz extends utils.Adapter {
       } else {
         // change came from the device. If it was the PIR, track it until no more motion is detected
         if (id.endsWith("pir.generic")) {
-          this.log.silly("tracking motion")
+          this.log.info("tracking motion")
           this.pir.trackMotion()
         }
       }

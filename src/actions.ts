@@ -36,11 +36,11 @@ export class Actions {
       native: {}
     })
     await this.createActionState(acn, "generic")
-    if (acn != "pir") {
-      await this.createActionState(acn, "single")
-      await this.createActionState(acn, "double")
-      await this.createActionState(acn, "long")
-    }
+    //if (acn != "pir") {
+    await this.createActionState(acn, "single")
+    await this.createActionState(acn, "double")
+    await this.createActionState(acn, "long")
+    //}
     // await this.createButtonState(btn, "press_release")
   }
 
@@ -50,7 +50,7 @@ export class Actions {
       common: {
         name: substate,
         type: "boolean",
-        role: "action",
+        role: "switch",
         read: true,
         write: true
       },

@@ -113,7 +113,7 @@ class PIR {
                             if (!result) {
                                 clearInterval(this.timer);
                                 this.timer = undefined;
-                                this.d.setState("actions.pir.generic", false, true);
+                                // this.d.setState("actions.pir.generic", false, true)
                                 this.d.log.info("ended tracking motion");
                             }
                         });
