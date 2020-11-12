@@ -12,7 +12,10 @@ import fetch from "node-fetch"
 export class Dimmers {
   constructor(private d: Dingz) { }
 
-  public async createDimmerObjects(): Promise<void> {
+  public async createDimmerObjects(dip_config: number): Promise<void> {
+    if (dip_config == 0) {
+      return;
+    }
     await this.d.setObjectAsync("dimmers", {
       type: "channel",
       common: {
@@ -21,10 +24,15 @@ export class Dimmers {
       },
       native: {}
     })
-    await this.createDimmer(0)
-    await this.createDimmer(1)
-    await this.createDimmer(2)
-    await this.createDimmer(3)
+    this.d.log.info(`Dimmer DIP config: ${dip_config}`);
+    if ((dip_config & 1) != 0) {
+      await this.createDimmer(0)
+      await this.createDimmer(1)
+    }
+    if ((dip_config & 2) != 0) {
+      await this.createDimmer(2)
+      await this.createDimmer(3)
+    }
   }
 
   private async createDimmer(dimmer: number): Promise<void> {
@@ -55,11 +63,15 @@ export class Dimmers {
     })
   }
 
-  public async setDimmerStates(n: DimmersState): Promise<void> {
-    await this.setDimmerState(0, n["0"])
-    await this.setDimmerState(1, n["1"])
-    await this.setDimmerState(2, n["2"])
-    await this.setDimmerState(3, n["3"])
+  public async setDimmerStates(n: DimmersState, dip_config: number): Promise<void> {
+    if ((dip_config & 1) != 0) {
+      await this.setDimmerState(0, n["0"])
+      await this.setDimmerState(1, n["1"])
+    }
+    if ((dip_config & 2) != 0) {
+      await this.setDimmerState(2, n["2"])
+      await this.setDimmerState(3, n["3"])
+    }
   }
 
   public async setDimmerState(n: number, s: DimmerState): Promise<void> {

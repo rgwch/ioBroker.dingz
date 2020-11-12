@@ -65,6 +65,23 @@ export type DimmersState = {
   "3": DimmerState;
 }
 
+export type ShadeState = {
+  current: {
+    blind: number;
+    lamella: number;
+  };
+  disabled: boolean;
+  index: {
+    relative: number;
+    absolute: number;
+  };
+}
+
+export type ShadesState = {
+  "0": ShadeState;
+  "1": ShadeState;
+}
+
 export type PirState = {
   success: boolean;
   intensity: number;

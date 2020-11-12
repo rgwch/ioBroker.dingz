@@ -7,6 +7,7 @@
  * UDP Discovery of Dingz
  * */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UDP = void 0;
 const dgram = require("dgram");
 const events_1 = require("events");
 class UDP extends events_1.EventEmitter {

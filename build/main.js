@@ -16,28 +16,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Dingz = exports.API = void 0;
 const utils = require("@iobroker/adapter-core");
 const node_fetch_1 = require("node-fetch");
 const udp_1 = require("./udp");
 const pir_1 = require("./pir");
 const actions_1 = require("./actions");
 const dimmers_1 = require("./dimmers");
+const shades_1 = require("./shades");
 // That's the only supported API as of now, AFAIK
 exports.API = "/api/v1/";
 class Dingz extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "dingz" }));
         this.interval = 30;
+        this.dip_config = 0;
         this.actions = new actions_1.Actions(this);
         this.pir = new pir_1.PIR(this);
         this.dimmers = new dimmers_1.Dimmers(this);
+        this.shades = new shades_1.Shades(this);
         this.on("ready", this.onReady.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
     /**
-     * We could find Dingz via its UDB broadcast. Unused now.
+     * We could find Dingz via its UDP broadcast. Unused now.
      */
     findDingz() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -78,10 +82,12 @@ class Dingz extends utils.Adapter {
                     this.setState("info.deviceInfo.front_sn", di[mac].front_sn);
                     this.setState("info.deviceInfo.puck_sn", di[mac].puck_sn);
                     this.setState("info.deviceInfo.details", JSON.stringify(di[mac]), true);
+                    this.setState("info.deviceInfo.dip_config", di[mac].dip_config);
                     this.log.info("Dingz Info: " + JSON.stringify(di[mac]));
                     this.setState("info.connection", true, true);
                     // we're connected. So set up State Objects
-                    yield this.createObjects();
+                    yield this.createObjects(di[mac].dip_config);
+                    this.dip_config = di[mac].dip_config;
                     this.subscribeStates("*");
                     // initial read
                     this.fetchValues();
@@ -101,7 +107,10 @@ class Dingz extends utils.Adapter {
             this.pir.setPirState(pirState);
         });
         this.doFetch("dimmer").then((res) => {
-            this.dimmers.setDimmerStates(res);
+            this.dimmers.setDimmerStates(res, this.dip_config);
+        });
+        this.doFetch("shade").then((res) => {
+            this.shades.setShadeStates(res, this.dip_config);
         });
     }
     /**
@@ -133,6 +142,10 @@ class Dingz extends utils.Adapter {
                     this.log.silly("dimmer changed " + id);
                     this.dimmers.sendDimmerState(subid, state);
                 }
+                if (subid.startsWith("shade")) {
+                    this.log.silly("shade changed " + id);
+                    this.shades.sendShadeState(subid, state);
+                }
             }
             else {
                 // change came from the device. If it was the PIR, track it until no more motion is detected
@@ -153,14 +166,14 @@ class Dingz extends utils.Adapter {
      *      connected: boolean
      *      deviceInfo: DeviceInfo
      *   },
-     *  actions:{
+     *   actions:{
      *      btn1: ActionState,
      *      btn2: ActionState,
      *      btn3: ActionState,
      *      btn4: ActionState,
      *      pir: ActionState
      *
-     *    },
+     *   },
      *   temperature: string,
      *   motion: boolean,
      *   brightness: {
@@ -169,16 +182,20 @@ class Dingz extends utils.Adapter {
      *      adc0: number,
      *      adc1: number,
      *   }
-     *    dimmers:{
+     *   dimmers:{
      *      dim0: DimmerState,
      *      dim1: DimmerState,
      *      dim2: DimmerState,
      *      dim3: DimmerState
-     *    }
+     *   }
+     *   shades:{
+     *      shd0: ShadeState,
+     *      shd1: ShadeState,
+     *   }
      *
      * }
      */
-    createObjects() {
+    createObjects(dip_config) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.setObjectAsync("temperature", {
                 type: "state",
@@ -193,7 +210,8 @@ class Dingz extends utils.Adapter {
             });
             yield this.actions.createActionObjects();
             yield this.pir.createPIRObjects();
-            yield this.dimmers.createDimmerObjects();
+            yield this.dimmers.createDimmerObjects(dip_config);
+            yield this.shades.createShadeObjects(dip_config);
         });
     }
     /**

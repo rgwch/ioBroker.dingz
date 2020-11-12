@@ -50,6 +50,7 @@ export class Actions {
       common: {
         name: substate,
         type: "boolean",
+        def: false,
         role: "switch",
         read: true,
         write: true
@@ -60,6 +61,7 @@ export class Actions {
   }
 
   private programAction(name: string, action: string): Promise<void> {
+    // TODO
     const def = `${this.d.config.hostip}/set/dingz.${this.d.instance}.actions.${name}.${action}?value=true&ack=true`
     this.d.log.info("programming " + name + ": " + JSON.stringify(def))
     const url = `${this.d.config.url}${API}action/${name}/${action}`
