@@ -13,7 +13,8 @@ import { UDP } from "./udp"
 import { PIR } from "./pir"
 import { Actions } from "./actions"
 import { Dimmers } from "./dimmers"
-import { DeviceInfo, PirState, DimmersState } from "./dingz-types"
+import { Shades } from "./shades"
+import { DeviceInfo, PirState, DimmersState, ShadesState } from "./dingz-types"
 
 
 // That's the only supported API as of now, AFAIK
@@ -39,9 +40,11 @@ declare global {
 export class Dingz extends utils.Adapter {
   private interval = 30
   private timer: any
+  private dip_config = 0
   private actions = new Actions(this)
   private pir = new PIR(this)
   private dimmers = new Dimmers(this)
+  private shades = new Shades(this)
 
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
@@ -57,7 +60,7 @@ export class Dingz extends utils.Adapter {
   }
 
   /**
-   * We could find Dingz via its UDB broadcast. Unused now.
+   * We could find Dingz via its UDP broadcast. Unused now.
    */
   private async findDingz(): Promise<string> {
     return new Promise((resolve) => {
@@ -98,10 +101,12 @@ export class Dingz extends utils.Adapter {
         this.setState("info.deviceInfo.front_sn", di[mac].front_sn)
         this.setState("info.deviceInfo.puck_sn", di[mac].puck_sn)
         this.setState("info.deviceInfo.details", JSON.stringify(di[mac]), true)
+        this.setState("info.deviceInfo.dip_config", di[mac].dip_config);
         this.log.info("Dingz Info: " + JSON.stringify(di[mac]))
         this.setState("info.connection", true, true);
         // we're connected. So set up State Objects
-        await this.createObjects()
+        await this.createObjects(di[mac].dip_config)
+        this.dip_config = di[mac].dip_config
 
         this.subscribeStates("*");
 
@@ -125,7 +130,11 @@ export class Dingz extends utils.Adapter {
     })
 
     this.doFetch("dimmer").then((res: DimmersState) => {
-      this.dimmers.setDimmerStates(res)
+      this.dimmers.setDimmerStates(res, this.dip_config)
+    })
+
+    this.doFetch("shade").then((res: ShadesState) => {
+      this.shades.setShadeStates(res, this.dip_config)
     })
 
   }
@@ -161,6 +170,10 @@ export class Dingz extends utils.Adapter {
           this.log.silly("dimmer changed " + id)
           this.dimmers.sendDimmerState(subid, state)
         }
+        if (subid.startsWith("shade")) {
+          this.log.silly("shade changed " + id)
+          this.shades.sendShadeState(subid, state)
+        }
 
       } else {
         // change came from the device. If it was the PIR, track it until no more motion is detected
@@ -183,14 +196,14 @@ export class Dingz extends utils.Adapter {
    *      connected: boolean
    *      deviceInfo: DeviceInfo
    *   },
-   *  actions:{
+   *   actions:{
    *      btn1: ActionState,
    *      btn2: ActionState,
    *      btn3: ActionState,
    *      btn4: ActionState,
    *      pir: ActionState
    *      
-   *    },
+   *   },
    *   temperature: string,
    *   motion: boolean,
    *   brightness: {
@@ -199,16 +212,20 @@ export class Dingz extends utils.Adapter {
    *      adc0: number,
    *      adc1: number,
    *   }
-   *    dimmers:{
+   *   dimmers:{
    *      dim0: DimmerState,
    *      dim1: DimmerState,
    *      dim2: DimmerState,
    *      dim3: DimmerState
-   *    }
+   *   }
+   *   shades:{
+   *      shd0: ShadeState,
+   *      shd1: ShadeState,
+   *   }
    * 
    * }
    */
-  private async createObjects(): Promise<void> {
+  private async createObjects(dip_config: number): Promise<void> {
     await this.setObjectAsync("temperature", {
       type: "state",
       common: {
@@ -223,7 +240,8 @@ export class Dingz extends utils.Adapter {
     })
     await this.actions.createActionObjects()
     await this.pir.createPIRObjects()
-    await this.dimmers.createDimmerObjects()
+    await this.dimmers.createDimmerObjects(dip_config)
+    await this.shades.createShadeObjects(dip_config)
   }
 
 

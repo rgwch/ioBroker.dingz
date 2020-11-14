@@ -202,7 +202,7 @@
       "native": {}
     },
     {
-      "_id": "info:deviceInfo",
+      "_id": "info.deviceInfo",
       "type": "channel",
       "common": {
         "name": "Hardware Informationen"
@@ -252,6 +252,18 @@
         "role": "json",
         "type": "string",
         "name": "Detailed informations",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.deviceInfo.dip_config",
+      "type": "state",
+      "common": {
+        "role": "json",
+        "type": "number",
+        "name": "DIP Switches",
         "read": true,
         "write": false
       },

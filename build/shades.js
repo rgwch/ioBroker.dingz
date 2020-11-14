@@ -14,55 +14,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Dimmers = void 0;
+exports.Shades = void 0;
 const main_1 = require("./main");
 const node_fetch_1 = require("node-fetch");
-class Dimmers {
+class Shades {
     constructor(d) {
         this.d = d;
     }
-    createDimmerObjects(dip_config) {
+    createShadeObjects(dip_config) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (dip_config == 0) {
+            if (dip_config == 3) {
                 return;
             }
-            yield this.d.setObjectAsync("dimmers", {
+            yield this.d.setObjectAsync("shades", {
                 type: "channel",
                 common: {
-                    name: "Dimmers",
+                    name: "Shades",
                     role: "state"
                 },
                 native: {}
             });
-            this.d.log.info(`Dimmer DIP config: ${dip_config}`);
-            if ((dip_config & 1) != 0) {
-                yield this.createDimmer(0);
-                yield this.createDimmer(1);
+            if ((dip_config & 1) == 0) {
+                yield this.createShade(0);
             }
-            if ((dip_config & 2) != 0) {
-                yield this.createDimmer(2);
-                yield this.createDimmer(3);
+            if ((dip_config & 2) == 0) {
+                yield this.createShade(1);
             }
         });
     }
-    createDimmer(dimmer) {
+    createShade(shade) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.d.setObjectAsync("dimmers." + dimmer, {
+            yield this.d.setObjectAsync("shades." + shade, {
                 type: "channel",
                 common: {
-                    name: "Dimmer " + dimmer,
+                    name: "Shade " + shade,
                 },
                 native: {}
             });
-            yield this.createDimmerState(dimmer, "on", "boolean");
-            yield this.createDimmerState(dimmer, "value", "number");
-            yield this.createDimmerState(dimmer, "ramp", "number");
-            yield this.createDimmerState(dimmer, "disabled", "boolean");
+            yield this.createShadeState(shade, "blind", "number");
+            yield this.createShadeState(shade, "lamella", "number");
+            yield this.createShadeState(shade, "disabled", "boolean");
         });
     }
-    createDimmerState(dimmer, substate, type) {
+    createShadeState(shade, substate, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.d.setObjectAsync(`dimmers.${dimmer}.${substate}`, {
+            yield this.d.setObjectAsync(`shades.${shade}.${substate}`, {
                 type: "state",
                 common: {
                     name: substate,
@@ -75,59 +71,49 @@ class Dimmers {
             });
         });
     }
-    setDimmerStates(n, dip_config) {
+    setShadeStates(n, dip_config) {
         return __awaiter(this, void 0, void 0, function* () {
-            if ((dip_config & 1) != 0) {
-                yield this.setDimmerState(0, n["0"]);
-                yield this.setDimmerState(1, n["1"]);
+            if ((dip_config & 1) == 0) {
+                yield this.setShadeState(0, n["0"]);
             }
-            if ((dip_config & 2) != 0) {
-                yield this.setDimmerState(2, n["2"]);
-                yield this.setDimmerState(3, n["3"]);
+            if ((dip_config & 2) == 0) {
+                yield this.setShadeState(1, n["1"]);
             }
         });
     }
-    setDimmerState(n, s) {
+    setShadeState(n, s) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.d.log.silly("Setting dimmer states for " + n + ", " + JSON.stringify(s));
-            yield this.d.setStateAsync(`dimmers.${n.toString()}.on`, s.on, true);
-            yield this.d.setStateAsync(`dimmers.${n}.value`, s.value, true);
-            yield this.d.setStateAsync(`dimmers.${n}.ramp`, s.ramp, true);
-            yield this.d.setStateAsync(`dimmers.${n}.disabled`, s.disabled, true);
+            this.d.log.silly("Setting shade states for " + n + ", " + JSON.stringify(s));
+            yield this.d.setStateAsync(`shades.${n}.blind`, s.current.blind, true);
+            yield this.d.setStateAsync(`shades.${n}.lamella`, s.current.lamella, true);
+            yield this.d.setStateAsync(`shades.${n}.disabled`, s.disabled, true);
         });
     }
-    sendDimmerState(id, state) {
+    sendShadeState(id, state) {
         return __awaiter(this, void 0, void 0, function* () {
             const parts = id.split(".");
             if (parts.length != 3) {
-                this.d.log.error("bad dimmer id");
+                this.d.log.error("bad shade id");
             }
             else {
                 const num = parts[1];
                 const action = parts[2];
-                if (action == "on") {
-                    yield this.doPost(`${num}/${state.val ? "on" : "off"}`);
-                }
-                else {
-                    if (action == "value") {
-                        const ramp = yield this.d.getStateAsync(`dimmers.${num}.ramp`);
-                        this.doPost(num, state.val, ramp.val);
-                    }
+                if (action == "blind" || action == "lamella") {
+                    const blind = yield this.d.getStateAsync(`shades.${num}.blind`);
+                    const lamella = yield this.d.getStateAsync(`shades.${num}.lamella`);
+                    this.doPost(num, blind.val, lamella.val);
                 }
             }
         });
     }
-    doPost(dimmer, value, ramp = 0) {
+    doPost(shade, blind = 0, lamella = 0) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = this.d.config.url + main_1.API + "dimmer/" + dimmer + ((value != undefined) ? "/on" : "");
-            this.d.log.info(`Posting ${url}; {value: ${value}, ramp: ${ramp}}`);
+            const url = this.d.config.url + main_1.API + "shade/" + shade;
+            this.d.log.info(`Posting ${url}; {blind: ${blind}, lamella: ${lamella}}`);
             try {
-                let encoded;
-                if (value != undefined) {
-                    encoded = new URLSearchParams();
-                    encoded.append("value", value.toString());
-                    encoded.append("ramp", ramp.toString());
-                }
+                let encoded = new URLSearchParams();
+                encoded.append("blind", blind.toString());
+                encoded.append("lamella", lamella.toString());
                 const response = yield node_fetch_1.default(url, {
                     method: "post",
                     headers: {
@@ -151,4 +137,4 @@ class Dimmers {
         });
     }
 }
-exports.Dimmers = Dimmers;
+exports.Shades = Shades;
