@@ -14,6 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Actions = void 0;
 const main_1 = require("./main");
 const node_fetch_1 = require("node-fetch");
 class Actions {
@@ -62,6 +63,7 @@ class Actions {
                 common: {
                     name: substate,
                     type: "boolean",
+                    def: false,
                     role: "switch",
                     read: true,
                     write: true
@@ -72,6 +74,7 @@ class Actions {
         });
     }
     programAction(name, action) {
+        // TODO
         const def = `${this.d.config.hostip}/set/dingz.${this.d.instance}.actions.${name}.${action}?value=true&ack=true`;
         this.d.log.info("programming " + name + ": " + JSON.stringify(def));
         const url = `${this.d.config.url}${main_1.API}action/${name}/${action}`;
